@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Flex Vistorias - Simples e Funcional</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Ícones (opcional) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <!-- Gráficos -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary:#2c3e50; --secondary:#3498db; --light:#f5f7fa; --white:#fff;
+      --muted:#6b7280; --success:#16a34a; --danger:#dc2626; --warning:#d97706;
+    }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial; background:var(--light); color:#111827; display:flex; min-height:100vh; }
+    /* Sidebar */
+    .sidebar { width:260px; background:var(--primary); color:var(--white); padding:16px 0; display:flex; flex-direction:column; }
+    .logo { padding:0 20px 16px; margin-bottom:8px; border-bottom:1px solid rgba(255,255,255,.1) }
+    .logo h2 { margin:0; font-size:20px; font-weight:700; letter-spacing:.3px; }
+    .menu { list-style:none; margin:8px 0 0; padding:0; }
+    .menu li { display:flex; align-items:center; gap:10px; padding:10px 18px; cursor:pointer; transition:.2s; border-left:4px solid transparent; }
+    .menu li:hover { background:rgba(255,255,255,.08); }
+    .menu li.active { background:rgba(255,255,255,.12); border-left-color:#fff; }
+    .logout { margin-top:auto; padding:8px 0; border-top:1px solid rgba(255,255,255,.1) }
+    /* Main */
+    .main { flex:1; padding:20px; overflow:auto; }
+    .header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+    .header h1 { margin:0; font-size:22px; }
+    .userbox { display:flex; align-items:center; gap:10px; color:#374151; }
+    .avatar { width:36px; height:36px; background:var(--secondary); color:#fff; border-radius:50%; display:grid; place-items:center; font-weight:700; }
+    /* Sections */
+    .section { display:none; }
+    .section.active { display:block; }
+    /* Cards */
+    .cards { display:grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap:12px; margin:16px 0 20px; }
+    .card { background:#fff; border-radius:10px; padding:14px; box-shadow:0 1px 4px rgba(0,0,0,.06); }
+    .card h4 { margin:0 0 6px; font-size:12px; color:#6b7280; font-weight:600; letter-spacing:.3px; text-transform:uppercase; }
+    .card .val { font-size:22px; font-weight:800; }
+    .card.success .val { color:var(--success) }
+    .card.danger .val { color:var(--danger) }
+    /* Panels */
+    .panel { background:#fff; border-radius:10px; padding:16px; box-shadow:0 1px 4px rgba(0,0,0,.06); }
+    .panel h3 { margin:0 0 10px; font-size:16px; }
+    /* Forms & inputs */
+    .row { display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap:10px; }
+    .row-3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    .row-2 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .row-1 { grid-template-columns: 1fr; }
+    input, select, textarea { width:100%; padding:10px 12px; border:1px solid #e5e7eb; border-radius:8px; outline:none; font-size:14px; }
+    input:focus, select:focus, textarea:focus { border-color:var(--secondary); box-shadow:0 0 0 3px rgba(52,152,219,.15); }
+    .btn { border:0; border-radius:8px; padding:10px 14px; font-weight:700; cursor:pointer; }
+    .btn-primary { background:var(--secondary); color:#fff; }
+    .btn-success { background:var(--success); color:#fff; }
+    .btn-danger { background:var(--danger); color:#fff; }
+    .btn-muted { background:#e5e7eb; color:#111827; }
+    .actions { display:flex; gap:6px; }
+    /* Lists */
+    .list { margin-top:12px; display:grid; gap:8px; }
+    .item { border:1px solid #e5e7eb; background:#fff; border-radius:8px; padding:10px; display:flex; align-items:center; justify-content:space-between; }
+    .item h4 { margin:0 0 4px; font-size:15px; }
+    .muted { color:#6b7280; font-size:13px; }
+    /* Tables */
+    table { width:100%; border-collapse: collapse; }
+    th, td { padding:10px 8px; text-align:left; border-bottom:1px solid #eee; font-size:14px; }
+    thead th { color:#6b7280; font-weight:700; }
+    /* Calendar */
+    .calendar-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+    .calendar-grid { display:grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap:6px; }
+    .day-name { text-align:center; font-weight:700; color:#6b7280; font-size:12px; }
+    .day { border:1px solid #e5e7eb; border-radius:8px; min-height:54px; display:grid; place-items:center; font-weight:700; background:#fff; }
+    .day.other { color:#9ca3af; }
+    .day.today { background:#eff6ff; border-color:#dbeafe; color:#1d4ed8; }
+    .day.has { background:#ecfdf5; border-color:#bbf7d0; color:#065f46; }
+    /* Responsive */
+    @media (max-width: 1080px) { .cards { grid-template-columns: repeat(2, minmax(0,1fr)); } .row { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    @media (max-width: 780px) { .sidebar { width:80px } .menu span { display:none } .logo h2 { font-size:16px } .cards { grid-template-columns: 1fr; } .row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo"><h2>Flex Vistorias</h2></div>
+    <ul class="menu">
+      <li class="active" onclick="showSection('dashboard', this)"><i class="fa-solid fa-gauge"></i><span>Dashboard</span></li>
+      <li onclick="showSection('clientes', this)"><i class="fa-solid fa-users"></i><span>Clientes</span></li>
+      <li onclick="showSection('servicos', this)"><i class="fa-solid fa-screwdriver-wrench"></i><span>Serviços</span></li>
+      <li onclick="showSection('venda', this)"><i class="fa-solid fa-cash-register"></i><span>Nova Venda</span></li>
+      <li onclick="showSection('contas', this)"><i class="fa-solid fa-money-bill-wave"></i><span>Contas a Receber</span></li>
+      <li onclick="showSection('agendamento', this)"><i class="fa-regular fa-calendar"></i><span>Agendamentos</span></li>
+      <li onclick="showSection('categorias', this)"><i class="fa-solid fa-tags"></i><span>Categorias</span></li>
+      <li onclick="showSection('usuarios', this)"><i class="fa-solid fa-user-gear"></i><span>Usuários</span></li>
+      <li onclick="showSection('relatorios', this)"><i class="fa-solid fa-chart-column"></i><span>Relatórios</span></li>
+      <li onclick="showSection('perfil', this)"><i class="fa-solid fa-user"></i><span>Perfil</span></li>
+    </ul>
+    <div class="logout">
+      <li class="menu" style="list-style:none" onclick="sair()"><div style="display:flex;align-items:center;gap:10px;padding:10px 18px;cursor:pointer"><i class="fa-solid fa-right-from-bracket"></i><span>Sair</span></div></li>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="header">
+      <h1 id="page-title">Dashboard</h1>
+      <div class="userbox">
+        <div id="notification-count" class="btn btn-danger" style="padding:4px 10px;font-size:12px;">0</div>
+        <div id="user-name">Administrador</div>
+        <div id="user-avatar" class="avatar">A</div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <section id="dashboard" class="section active">
+      <div class="cards">
+        <div class="card success">
+          <h4>Vendas do mês</h4>
+          <div id="sales-value" class="val">R$ 0,00</div>
+          <div id="sales-footer" class="muted">0 vendas</div>
+        </div>
+        <div class="card danger">
+          <h4>Contas pendentes</h4>
+          <div id="pending-value" class="val">0</div>
+          <div id="pending-footer" class="muted">Contas a receber</div>
+        </div>
+        <div class="card">
+          <h4>Total de clientes</h4>
+          <div id="clients-value" class="val">0</div>
+          <div class="muted">Clientes cadastrados</div>
+        </div>
+        <div class="card">
+          <h4>Serviços ativos</h4>
+          <div id="services-value" class="val">0</div>
+          <div class="muted">Serviços disponíveis</div>
+        </div>
+        <div class="card">
+          <h4>Agendamentos hoje</h4>
+          <div id="scheduling-value" class="val">0</div>
+          <div class="muted">Para hoje</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Vendas mensais</h3>
+        <div style="height:260px"><canvas id="salesChart"></canvas></div>
+      </div>
+    </section>
+
+    <!-- CLIENTES -->
+    <section id="clientes" class="section">
+      <div class="panel">
+        <h3>Clientes</h3>
+        <div class="row row-3">
+          <input id="client-name" placeholder="Nome completo *" required>
+          <input id="client-email" placeholder="E-mail">
+          <input id="client-phone" placeholder="Telefone">
+          <input id="client-document" placeholder="CPF/CNPJ">
+          <select id="client-inspection-type">
+            <option value="">Tipo de Vistoria</option>
+            <option value="1">1 - Vistoria Veicular</option>
+            <option value="2">2 - Vistoria Cautelar</option>
+            <option value="3">3 - Consulta</option>
+          </select>
+          <button class="btn btn-primary" onclick="addClient()">Adicionar</button>
+          <input id="search-clients" placeholder="Buscar clientes..." oninput="searchClients()">
+        </div>
+        <div id="clients-container" class="list"></div>
+      </div>
+    </section>
+
+    <!-- SERVIÇOS -->
+    <section id="servicos" class="section">
+      <div class="panel">
+        <h3>Serviços</h3>
+        <div class="row row-3">
+          <input id="service-code" placeholder="Código (ex: 001, 002)">
+          <input id="service-name" placeholder="Nome do serviço *" required>
+          <input id="service-price" type="number" step="0.01" placeholder="Preço (R$) *" required>
+          <input id="service-cost" type="number" step="0.01" placeholder="Custo (R$) *" required>
+          <input id="service-duration" type="number" placeholder="Duração (min)">
+          <select id="service-category"></select>
+          <button class="btn btn-primary" onclick="addService()">Adicionar</button>
+          <input id="search-services" placeholder="Buscar serviços..." oninput="searchServices()">
+        </div>
+        <div id="services-container" class="list"></div>
+      </div>
+    </section>
+
+    <!-- NOVA VENDA -->
+    <section id="venda" class="section">
+      <div class="panel">
+        <h3>Nova venda</h3>
+        <div class="row row-3">
+          <select id="sale-client"></select>
+          <select id="sale-service"></select>
+          <input id="sale-vehicle" placeholder="Veículo">
+          <input id="sale-plate" placeholder="Placa">
+          <input id="sale-date" type="date">
+          <select id="sale-payment">
+            <option value="dinheiro">Dinheiro</option>
+            <option value="cartao_credito">Cartão de Crédito</option>
+            <option value="cartao_debito">Cartão de Débito</option>
+            <option value="pix">PIX</option>
+          </select>
+          <input id="sale-discount" type="number" step="0.01" placeholder="Desconto (R$)">
+          <input id="sale-notes" placeholder="Observações">
+          <button class="btn btn-success" onclick="completeSale()">Finalizar venda</button>
+        </div>
+
+        <div id="sale-summary" class="panel" style="margin-top:12px; display:none;">
+          <h3>Resumo</h3>
+          <div class="row row-2">
+            <div><b>Cliente:</b> <span id="summary-client"></span></div>
+            <div><b>Serviço:</b> <span id="summary-service"></span></div>
+            <div><b>Veículo:</b> <span id="summary-vehicle"></span></div>
+            <div><b>Placa:</b> <span id="summary-plate"></span></div>
+            <div><b>Data:</b> <span id="summary-date"></span></div>
+            <div><b>Pagamento:</b> <span id="summary-payment"></span></div>
+            <div><b>Desconto:</b> <span id="summary-discount"></span></div>
+            <div class="row-1"><b>Observações:</b> <span id="summary-notes"></span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTAS A RECEBER -->
+    <section id="contas" class="section">
+      <div class="panel">
+        <h3>Contas a receber</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Venda</th><th>Cliente</th><th>Serviço</th><th>Data</th><th>Valor</th><th>Status</th><th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="bills-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- AGENDAMENTOS -->
+    <section id="agendamento" class="section">
+      <div class="panel">
+        <h3>Agendamentos</h3>
+        <div class="row row-3">
+          <select id="scheduling-client"></select>
+          <select id="scheduling-service"></select>
+          <input id="scheduling-date" type="date">
+          <input id="scheduling-time" type="time">
+          <input id="scheduling-notes" placeholder="Observações">
+          <button class="btn btn-primary" onclick="addScheduling()">Agendar</button>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:12px;">
+        <div class="calendar-head">
+          <button class="btn btn-muted" onclick="prevMonth()"><i class="fa-solid fa-chevron-left"></i></button>
+          <div id="current-month" style="font-weight:800"></div>
+          <button class="btn btn-muted" onclick="nextMonth()"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+        <div class="calendar-grid" id="calendar-weekdays">
+          <div class="day-name">Dom</div><div class="day-name">Seg</div><div class="day-name">Ter</div><div class="day-name">Qua</div><div class="day-name">Qui</div><div class="day-name">Sex</div><div class="day-name">Sáb</div>
+        </div>
+        <div class="calendar-grid" id="calendar-days"></div>
+      </div>
+
+      <div class="panel" style="margin-top:12px;">
+        <div class="row"><input id="search-scheduling" placeholder="Buscar agendamentos por cliente/serviço/nota..."></div>
+        <div id="scheduling-container" class="list"></div>
+      </div>
+    </section>
+
+    <!-- CATEGORIAS -->
+    <section id="categorias" class="section">
+      <div class="panel">
+        <h3>Categorias</h3>
+        <div class="row row-3">
+          <input id="category-name" placeholder="Nome da categoria">
+          <input id="category-description" placeholder="Descrição (opcional)">
+          <button class="btn btn-primary" onclick="addCategory()">Adicionar</button>
+        </div>
+        <div id="categories-container" class="list"></div>
+      </div>
+    </section>
+
+    <!-- USUÁRIOS -->
+    <section id="usuarios" class="section">
+      <div class="panel">
+        <h3>Usuários</h3>
+        <div class="row row-3">
+          <input id="user-name" placeholder="Nome">
+          <input id="user-email" placeholder="E-mail">
+          <input id="user-password" type="password" placeholder="Senha">
+          <select id="user-role">
+            <option value="admin">Administrador</option>
+            <option value="manager">Gerente</option>
+            <option value="attendant">Atendente</option>
+            <option value="viewer">Visualizador</option>
+          </select>
+          <button class="btn btn-primary" onclick="addUser()">Adicionar</button>
+        </div>
+        <div id="users-container" class="list"></div>
+      </div>
+    </section>
+
+    <!-- RELATÓRIOS -->
+    <section id="relatorios" class="section">
+      <div class="panel">
+        <h3>Relatório de vendas</h3>
+        <div class="row row-3">
+          <input id="report-sales-date-start" type="date">
+          <input id="report-sales-date-end" type="date">
+          <select id="report-sales-service"><option value="">Todos os serviços</option></select>
+          <button class="btn btn-primary" onclick="generateSalesReport()">Gerar</button>
+          <button class="btn btn-muted" onclick="window.print()">Imprimir</button>
+        </div>
+        <div style="height:260px"><canvas id="salesReportChart"></canvas></div>
+        <table style="margin-top:12px">
+          <thead><tr><th>Período</th><th>Qtd</th><th>Total</th><th>Ticket médio</th></tr></thead>
+          <tbody id="sales-report-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PERFIL -->
+    <section id="perfil" class="section">
+      <div class="panel">
+        <h3>Meu perfil</h3>
+        <div class="row row-3">
+          <input id="profile-name" placeholder="Nome">
+          <input id="profile-email" placeholder="E-mail">
+          <input id="profile-phone" placeholder="Telefone">
+          <input id="profile-password" type="password" placeholder="Nova senha (opcional)">
+          <input id="profile-password-confirm" type="password" placeholder="Confirmar nova senha">
+          <button class="btn btn-primary" onclick="updateProfile()">Salvar</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Estado
+    let clients = JSON.parse(localStorage.getItem('clients')) || [];
+    let services = JSON.parse(localStorage.getItem('services')) || [];
+    let categories = JSON.parse(localStorage.getItem('categories')) || [];
+    let sales = JSON.parse(localStorage.getItem('sales')) || [];
+    let users = JSON.parse(localStorage.getItem('users')) || [{ id:1, name:"Administrador", email:"admin@flexvistorias.com", password:"admin123", role:"admin", phone:"(11) 99999-9999" }];
+    let schedulings = JSON.parse(localStorage.getItem('schedulings')) || [];
+    let notifications = JSON.parse(localStorage.getItem('notifications')) || [];
+    let currentUser = users[0];
+    let currentDate = new Date();
+    let salesChart = null;
+
+    // Valores das vistorias por categoria
+    const inspectionValues = {
+      '1': 150.00, // Vistoria Veicular
+      '2': 200.00, // Vistoria Cautelar
+      '3': 50.00   // Consulta
+    };
+
+    // Helpers
+    const save = {
+      clients:()=>localStorage.setItem('clients', JSON.stringify(clients)),
+      services:()=>localStorage.setItem('services', JSON.stringify(services)),
+      categories:()=>localStorage.setItem('categories', JSON.stringify(categories)),
+      sales:()=>localStorage.setItem('sales', JSON.stringify(sales)),
+      users:()=>localStorage.setItem('users', JSON.stringify(users)),
+      schedulings:()=>localStorage.setItem('schedulings', JSON.stringify(schedulings)),
+      notifications:()=>localStorage.setItem('notifications', JSON.stringify(notifications)),
+    };
+    const byId = (id)=>document.getElementById(id);
+    const currency = (v)=>`R$ ${Number(v||0).toFixed(2).replace('.', ',')}`;
+    const todayISO = ()=> new Date().toISOString().split('T')[0];
+    const formatDate = (d)=>{ if(!d) return ''; const s=d.includes('T')?d.split('T')[0]:d; const [y,m,da]=s.split('-'); return `${da}/${m}/${y}`; };
+
+    // Navegação
+    function showSection(id, el){
+      document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+      byId(id).classList.add('active');
+      document.querySelectorAll('.menu li').forEach(i=>i.classList.remove('active'));
+      if(el) el.classList.add('active');
+      const label = el?.querySelector('span')?.textContent || 'Dashboard';
+      byId('page-title').textContent = label;
+
+      if(id==='dashboard') updateDashboard();
+      if(id==='clientes'){ loadClients(); }
+      if(id==='servicos'){ loadCategoriesForServices(); loadServices(); }
+      if(id==='venda'){ loadClientsForSale(); loadServicesForSale(); }
+      if(id==='contas'){ loadBills(); }
+      if(id==='agendamento'){ loadSchedulingFormOptions(); loadSchedulingCalendar(); loadSchedulingList(); attachSchedulingSearch(); }
+      if(id==='categorias'){ loadCategories(); }
+      if(id==='usuarios'){ loadUsers(); }
+      if(id==='relatorios'){ loadReportFilters(); }
+      if(id==='perfil'){ fillProfile(); }
+    }
+
+    // Dashboard
+    function updateDashboard(){
+      const total = sales.reduce((t,s)=>{
+        const svc = services.find(x=>x.id==s.serviceId);
+        return t + (svc?parseFloat(svc.price):0);
+      },0);
+      const pend = sales.filter(s=>s.status!=='Pago').length;
+      const todayCount = schedulings.filter(s=>{
+        const d=new Date(s.date), t=new Date();
+        return d.toDateString()===t.toDateString();
+      }).length;
+
+      byId('sales-value').textContent = currency(total);
+      byId('sales-footer').textContent = `${sales.length} vendas`;
+      byId('pending-value').textContent = pend;
+      byId('clients-value').textContent = clients.length;
+      byId('services-value').textContent = services.length;
+      byId('scheduling-value').textContent = todayCount;
+
+      updateSalesChart();
+    }
+    function updateSalesChart(){
+      const ctx = byId('salesChart').getContext('2d');
+      const monthTotals = Array(12).fill(0);
+      sales.forEach(s=>{
+        const d = new Date(s.date); const svc=services.find(x=>x.id==s.serviceId);
+        if(!isNaN(d) && svc) monthTotals[d.getMonth()]+=parseFloat(svc.price||0);
+      });
+      if(salesChart) salesChart.destroy();
+      salesChart = new Chart(ctx, {
+        type:'line',
+        data:{ labels:['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],
+               datasets:[{ data:monthTotals, borderColor:'#3498db', backgroundColor:'rgba(52,152,219,.15)', fill:true, tension:.3 }] },
+        options:{ responsive:true, plugins:{ legend:{display:false} }, scales:{ y:{ beginAtZero:true } } }
+      });
+    }
+
+    // Clientes
+    function addClient(){
+      const name=byId('client-name').value.trim();
+      const email=byId('client-email').value.trim();
+      const phone=byId('client-phone').value.trim();
+      const document=byId('client-document').value.trim();
+      const inspectionType=byId('client-inspection-type').value;
+      
+      if(!name) return alert('Informe o nome');
+      
+      clients.push({ 
+        id:Date.now(), 
+        name, 
+        email, 
+        phone, 
+        document, 
+        inspectionType,
+        inspectionValue: inspectionType ? inspectionValues[inspectionType] : 0,
+        createdAt:new Date().toISOString() 
+      });
+      
+      save.clients();
+      byId('client-name').value=''; 
+      byId('client-email').value=''; 
+      byId('client-phone').value=''; 
+      byId('client-document').value='';
+      byId('client-inspection-type').selectedIndex = 0;
+      
+      loadClients(); 
+      updateDashboard();
+    }
+    
+    function loadClients(list=null){
+      const c = byId('clients-container'); 
+      c.innerHTML='';
+      
+      (list||clients).forEach(cl=>{
+        const inspectionTypeLabel = cl.inspectionType ? 
+          `${cl.inspectionType} - ${['Vistoria Veicular', 'Vistoria Cautelar', 'Consulta'][cl.inspectionType-1]}` : 
+          'Não definido';
+          
+        const el=document.createElement('div'); 
+        el.className='item';
+        el.innerHTML=`
+          <div>
+            <h4>${cl.name}</h4>
+            <div class="muted">
+              ${cl.email||'-'} | ${cl.phone||'-'} | ${cl.document||'-'} 
+              ${cl.inspectionType ? `| Tipo: ${inspectionTypeLabel} (${currency(cl.inspectionValue)})` : ''}
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-muted" onclick="editClient(${cl.id})">Editar</button>
+            <button class="btn btn-danger" onclick="deleteClient(${cl.id})">Excluir</button>
+          </div>`;
+        c.appendChild(el);
+      });
+    }
+    
+    function editClient(id){
+      const c = clients.find(x=>x.id===id); 
+      if(!c) return;
+      
+      const name=prompt('Nome',c.name); 
+      if(name===null) return;
+      
+      const email=prompt('E-mail',c.email||'');
+      if(email===null) return;
+      
+      const phone=prompt('Telefone',c.phone||'');
+      if(phone===null) return;
+      
+      const doc=prompt('CPF/CNPJ',c.document||'');
+      if(doc===null) return;
+      
+      const inspectionType=prompt('Tipo de Vistoria (1-Veicular, 2-Cautelar, 3-Consulta)',c.inspectionType||'');
+      if(inspectionType===null) return;
+      
+      c.name=name.trim(); 
+      c.email=email.trim(); 
+      c.phone=phone.trim(); 
+      c.document=doc.trim();
+      c.inspectionType = inspectionType.trim();
+      c.inspectionValue = inspectionType ? inspectionValues[inspectionType] : 0;
+      
+      save.clients(); 
+      loadClients(); 
+      updateDashboard();
+    }
+    
+    function deleteClient(id){
+      if(!confirm('Excluir cliente?')) return;
+      clients = clients.filter(c=>c.id!==id); 
+      save.clients();
+      schedulings = schedulings.filter(s=>s.clientId!==id); 
+      save.schedulings();
+      sales = sales.filter(s=>s.clientId!==id); 
+      save.sales();
+      loadClients(); 
+      updateDashboard();
+    }
+    
+    function searchClients(){
+      const q = byId('search-clients').value.toLowerCase().trim();
+      if(!q) return loadClients();
+      
+      const filtered = clients.filter(c => 
+        (c.name||'').toLowerCase().includes(q) || 
+        (c.email||'').toLowerCase().includes(q) || 
+        (c.phone||'').toLowerCase().includes(q) ||
+        (c.document||'').toLowerCase().includes(q)
+      );
+      
+      loadClients(filtered);
+    }
+
+    // Categorias
+    function addCategory(){
+      const name=byId('category-name').value.trim();
+      const description=byId('category-description').value.trim();
+      if(!name) return alert('Informe o nome da categoria');
+      categories.push({ id:Date.now(), name, description, createdAt:new Date().toISOString() });
+      save.categories(); byId('category-name').value=''; byId('category-description').value='';
+      loadCategories(); loadCategoriesForServices();
+    }
+    function loadCategories(){
+      const c = byId('categories-container'); c.innerHTML='';
+      categories.forEach(cat=>{
+        const el=document.createElement('div'); el.className='item';
+        el.innerHTML=`
+          <div><h4>${cat.name}</h4><div class="muted">${cat.description||'Sem descrição'}</div></div>
+          <div class="actions">
+            <button class="btn btn-muted" onclick="editCategory(${cat.id})">Editar</button>
+            <button class="btn btn-danger" onclick="deleteCategory(${cat.id})">Excluir</button>
+          </div>`;
+        c.appendChild(el);
+      });
+    }
+    function editCategory(id){
+      const c = categories.find(x=>x.id===id); if(!c) return;
+      const name=prompt('Nome',c.name); if(name===null) return;
+      const desc=prompt('Descrição',c.description||''); if(desc===null) return;
+      c.name=name.trim(); c.description=desc.trim(); save.categories(); loadCategories(); loadCategoriesForServices();
+    }
+    function deleteCategory(id){
+      if(!confirm('Excluir categoria?')) return;
+      categories = categories.filter(c=>c.id!==id); save.categories();
+      services = services.map(s=> s.categoryId==id ? {...s, categoryId:null}: s); save.services();
+      loadCategories(); loadServices(); loadCategoriesForServices();
+    }
+
+    // Serviços
+    function loadCategoriesForServices(){
+      const s=byId('service-category'); if(!s) return;
+      s.innerHTML='<option value="">Categoria (opcional)</option>';
+      categories.forEach(cat=>{
+        const o=document.createElement('option'); o.value=cat.id; o.textContent=cat.name; s.appendChild(o);
+      });
+    }
+    
+    function addService(){
+      const code=byId('service-code').value.trim();
+      const name=byId('service-name').value.trim();
+      const price=parseFloat(byId('service-price').value || '0');
+      const cost=parseFloat(byId('service-cost').value || '0');
+      const duration=parseInt(byId('service-duration').value || '0');
+      const categoryId=byId('service-category').value || null;
+      
+      if(!name || isNaN(price) || isNaN(cost)) return alert('Informe nome, preço e custo do serviço');
+      
+      services.push({ 
+        id:Date.now(), 
+        code,
+        name, 
+        price, 
+        cost,
+        duration, 
+        categoryId, 
+        createdAt:new Date().toISOString() 
+      });
+      
+      save.services(); 
+      byId('service-code').value=''; 
+      byId('service-name').value=''; 
+      byId('service-price').value=''; 
+      byId('service-cost').value=''; 
+      byId('service-duration').value=''; 
+      byId('service-category').selectedIndex=0;
+      
+      loadServices(); 
+      updateDashboard();
+    }
+    
+    function loadServices(list=null){
+      const c = byId('services-container'); c.innerHTML='';
+      (list||services).forEach(svc=>{
+        const cat = categories.find(c=>c.id==svc.categoryId);
+        const el=document.createElement('div'); el.className='item';
+        el.innerHTML=`
+          <div>
+            <h4>${svc.code ? svc.code + ' - ' : ''}${svc.name}</h4>
+            <div class="muted">
+              Preço: ${currency(svc.price)} | Custo: ${currency(svc.cost)} | 
+              ${svc.duration ? `Duração: ${svc.duration}min` : ''} | 
+              ${cat ? cat.name : 'Sem categoria'}
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-muted" onclick="editService(${svc.id})">Editar</button>
+            <button class="btn btn-danger" onclick="deleteService(${svc.id})">Excluir</button>
+          </div>`;
+        c.appendChild(el);
+      });
+    }
+    
+    function editService(id){
+      const s = services.find(x=>x.id===id); if(!s) return;
+      const code=prompt('Código',s.code||''); if(code===null) return;
+      const name=prompt('Nome',s.name); if(name===null) return;
+      const price=prompt('Preço',s.price); if(price===null) return;
+      const cost=prompt('Custo',s.cost); if(cost===null) return;
+      const duration=prompt('Duração (min)',s.duration||''); if(duration===null) return;
+      const catId=prompt('ID da categoria',s.categoryId||''); if(catId===null) return;
+      
+      s.code=code.trim(); 
+      s.name=name.trim(); 
+      s.price=parseFloat(price); 
+      s.cost=parseFloat(cost);
+      s.duration=parseInt(duration)||null; 
+      s.categoryId=catId?parseInt(catId):null;
+      
+      save.services(); 
+      loadServices(); 
+      updateDashboard();
+    }
+    
+    function deleteService(id){
+      if(!confirm('Excluir serviço?')) return;
+      services = services.filter(s=>s.id!==id); save.services();
+      sales = sales.filter(s=>s.serviceId!==id); save.sales();
+      schedulings = schedulings.filter(s=>s.serviceId!==id); save.schedulings();
+      loadServices(); updateDashboard();
+    }
+    
+    function searchServices(){
+      const q = byId('search-services').value.toLowerCase().trim();
+      if(!q) return loadServices();
+      
+      const filtered = services.filter(s => 
+        (s.name||'').toLowerCase().includes(q) || 
+        (s.code||'').toLowerCase().includes(q)
+      );
+      
+      loadServices(filtered);
+    }
+
+    // Vendas
+    function loadClientsForSale(){
+      const s=byId('sale-client'); if(!s) return;
+      s.innerHTML='<option value="">Selecione o cliente</option>';
+      clients.forEach(c=>{
+        const o=document.createElement('option'); o.value=c.id; o.textContent=c.name; s.appendChild(o);
+      });
+    }
+    function loadServicesForSale(){
+      const s=byId('sale-service'); if(!s) return;
+      s.innerHTML='<option value="">Selecione o serviço</option>';
+      services.forEach(svc=>{
+        const o=document.createElement('option'); o.value=svc.id; o.textContent=svc.name; s.appendChild(o);
+      });
+    }
+    function completeSale(){
+      const clientId=parseInt(byId('sale-client').value);
+      const serviceId=parseInt(byId('sale-service').value);
+      const vehicle=byId('sale-vehicle').value.trim();
+      const plate=byId('sale-plate').value.trim();
+      const date=byId('sale-date').value || todayISO();
+      const payment=byId('sale-payment').value;
+      const discount=parseFloat(byId('sale-discount').value || '0');
+      const notes=byId('sale-notes').value.trim();
+      
+      if(!clientId || !serviceId) return alert('Selecione cliente e serviço');
+      
+      const client = clients.find(c=>c.id===clientId);
+      const service = services.find(s=>s.id===serviceId);
+      const total = service.price - discount;
+      
+      sales.push({ 
+        id:Date.now(), 
+        clientId, 
+        serviceId, 
+        vehicle, 
+        plate,
+        date, 
+        payment, 
+        discount, 
+        notes, 
+        total, 
+        status:'Pendente', 
+        createdAt:new Date().toISOString() 
+      });
+      
+      save.sales();
+      
+      // Mostrar resumo
+      byId('summary-client').textContent = client.name;
+      byId('summary-service').textContent = service.name;
+      byId('summary-vehicle').textContent = vehicle || '-';
+      byId('summary-plate').textContent = plate || '-';
+      byId('summary-date').textContent = formatDate(date);
+      byId('summary-payment').textContent = payment;
+      byId('summary-discount').textContent = currency(discount);
+      byId('summary-notes').textContent = notes || '-';
+      byId('sale-summary').style.display = 'block';
+      
+      updateDashboard();
+    }
+
+    // Contas a receber
+    function loadBills(){
+      const t=byId('bills-table-body'); t.innerHTML='';
+      sales.forEach(s=>{
+        const cl=clients.find(c=>c.id===s.clientId);
+        const sv=services.find(se=>se.id===s.serviceId);
+        if(!cl || !sv) return;
+        const tr=document.createElement('tr');
+        tr.innerHTML=`
+          <td>#${s.id}</td>
+          <td>${cl.name}</td>
+          <td>${sv.name}</td>
+          <td>${formatDate(s.date)}</td>
+          <td>${currency(s.total)}</td>
+          <td>${s.status}</td>
+          <td>
+            <button class="btn btn-success" onclick="markBillAsPaid(${s.id})" ${s.status==='Pago'?'disabled':''}>Receber</button>
+            <button class="btn btn-muted" onclick="editBill(${s.id})">Editar</button>
+          </td>`;
+        t.appendChild(tr);
+      });
+    }
+    function markBillAsPaid(id){
+      const s = sales.find(x=>x.id===id); if(!s) return;
+      s.status='Pago'; save.sales(); loadBills(); updateDashboard();
+    }
+    function editBill(id){
+      const s = sales.find(x=>x.id===id); if(!s) return;
+      const status=prompt('Status (Pendente/Pago)',s.status); if(status===null) return;
+      s.status=status; save.sales(); loadBills(); updateDashboard();
+    }
+
+    // Agendamentos
+    function loadSchedulingFormOptions(){
+      const s=byId('scheduling-client'); if(!s) return;
+      s.innerHTML='<option value="">Selecione o cliente</option>';
+      clients.forEach(c=>{ const o=document.createElement('option'); o.value=c.id; o.textContent=c.name; s.appendChild(o); });
+      const s2=byId('scheduling-service'); if(!s2) return;
+      s2.innerHTML='<option value="">Selecione o serviço</option>';
+      services.forEach(svc=>{ const o=document.createElement('option'); o.value=svc.id; o.textContent=svc.name; s2.appendChild(o); });
+    }
+    function addScheduling(){
+      const clientId=parseInt(byId('scheduling-client').value);
+      const serviceId=parseInt(byId('scheduling-service').value);
+      const date=byId('scheduling-date').value;
+      const time=byId('scheduling-time').value;
+      const notes=byId('scheduling-notes').value.trim();
+      if(!clientId || !serviceId || !date || !time) return alert('Preencha todos os campos obrigatórios');
+      schedulings.push({ id:Date.now(), clientId, serviceId, date, time, notes, createdAt:new Date().toISOString() });
+      save.schedulings(); byId('scheduling-notes').value='';
+      loadSchedulingCalendar(); loadSchedulingList(); updateDashboard();
+    }
+    function loadSchedulingCalendar(){
+      const monthNames = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+      byId('current-month').textContent = `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+      const year=currentDate.getFullYear(), month=currentDate.getMonth();
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month+1, 0);
+      const daysInMonth = lastDay.getDate();
+      const startDay = firstDay.getDay();
+      const c=byId('calendar-days'); c.innerHTML='';
+      for(let i=0; i<startDay; i++){ const d=document.createElement('div'); d.className='day other'; c.appendChild(d); }
+      const today = new Date();
+      for(let i=1; i<=daysInMonth; i++){
+        const d=document.createElement('div'); 
+        const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+        const hasScheduling = schedulings.some(s=>s.date===dateStr);
+        d.className='day' + (i===today.getDate() && month===today.getMonth() && year===today.getFullYear() ? ' today' : '') + (hasScheduling ? ' has' : '');
+        d.textContent = i; d.setAttribute('data-date', dateStr);
+        d.onclick=()=>showSchedulingDay(dateStr);
+        c.appendChild(d);
+      }
+    }
+    function showSchedulingDay(dateStr){
+      const daySchedulings = schedulings.filter(s=>s.date===dateStr);
+      if(daySchedulings.length===0) return alert('Nenhum agendamento para este dia');
+      let msg = `Agendamentos para ${formatDate(dateStr)}:\n\n`;
+      daySchedulings.forEach(s=>{
+        const cl=clients.find(c=>c.id===s.clientId);
+        const sv=services.find(se=>se.id===s.serviceId);
+        msg += `${s.time} - ${cl?.name||'Cliente'} - ${sv?.name||'Serviço'}\n`;
+      });
+      alert(msg);
+    }
+    function loadSchedulingList(list=null){
+      const c=byId('scheduling-container'); c.innerHTML='';
+      (list||schedulings).sort((a,b)=>new Date(a.date+'T'+a.time)-new Date(b.date+'T'+b.time)).forEach(s=>{
+        const cl=clients.find(c=>c.id===s.clientId);
+        const sv=services.find(se=>se.id===s.serviceId);
+        if(!cl || !sv) return;
+        const el=document.createElement('div'); el.className='item';
+        el.innerHTML=`
+          <div>
+            <h4>${formatDate(s.date)} às ${s.time}</h4>
+            <div class="muted">${cl.name} - ${sv.name} ${s.notes ? `(${s.notes})` : ''}</div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-muted" onclick="editScheduling(${s.id})">Editar</button>
+            <button class="btn btn-danger" onclick="deleteScheduling(${s.id})">Excluir</button>
+          </div>`;
+        c.appendChild(el);
+      });
+    }
+    function editScheduling(id){
+      const s = schedulings.find(x=>x.id===id); if(!s) return;
+      const date=prompt('Data (YYYY-MM-DD)',s.date); if(date===null) return;
+      const time=prompt('Horário (HH:MM)',s.time); if(time===null) return;
+      const notes=prompt('Observações',s.notes||''); if(notes===null) return;
+      s.date=date; s.time=time; s.notes=notes; save.schedulings(); loadSchedulingCalendar(); loadSchedulingList(); updateDashboard();
+    }
+    function deleteScheduling(id){
+      if(!confirm('Excluir agendamento?')) return;
+      schedulings = schedulings.filter(s=>s.id!==id); save.schedulings(); loadSchedulingCalendar(); loadSchedulingList(); updateDashboard();
+    }
+    function attachSchedulingSearch(){
+      byId('search-scheduling').oninput=()=>{
+        const q=byId('search-scheduling').value.toLowerCase().trim();
+        if(!q) return loadSchedulingList();
+        const filtered = schedulings.filter(s=>{
+          const cl=clients.find(c=>c.id===s.clientId);
+          const sv=services.find(se=>se.id===s.serviceId);
+          return (cl?.name||'').toLowerCase().includes(q) || (sv?.name||'').toLowerCase().includes(q) || (s.notes||'').toLowerCase().includes(q);
+        });
+        loadSchedulingList(filtered);
+      };
+    }
+    function prevMonth(){ currentDate.setMonth(currentDate.getMonth()-1); loadSchedulingCalendar(); }
+    function nextMonth(){ currentDate.setMonth(currentDate.getMonth()+1); loadSchedulingCalendar(); }
+
+    // Usuários
+    function addUser(){
+      const name=byId('user-name').value.trim();
+      const email=byId('user-email').value.trim();
+      const password=byId('user-password').value;
+      const role=byId('user-role').value;
+      if(!name || !email || !password) return alert('Preencha todos os campos obrigatórios');
+      users.push({ id:Date.now(), name, email, password, role, createdAt:new Date().toISOString() });
+      save.users(); byId('user-name').value=''; byId('user-email').value=''; byId('user-password').value='';
+      loadUsers();
+    }
+    function loadUsers(){
+      const c=byId('users-container'); c.innerHTML='';
+      users.forEach(u=>{
+        const el=document.createElement('div'); el.className='item';
+        el.innerHTML=`
+          <div><h4>${u.name}</h4><div class="muted">${u.email} (${u.role})</div></div>
+          <div class="actions">
+            <button class="btn btn-muted" onclick="editUser(${u.id})">Editar</button>
+            <button class="btn btn-danger" onclick="deleteUser(${u.id})" ${u.id===currentUser.id?'disabled':''}>Excluir</button>
+          </div>`;
+        c.appendChild(el);
+      });
+    }
+    function editUser(id){
+      const u = users.find(x=>x.id===id); if(!u) return;
+      const name=prompt('Nome',u.name); if(name===null) return;
+      const email=prompt('E-mail',u.email); if(email===null) return;
+      const role=prompt('Perfil (admin/manager/attendant/viewer)',u.role); if(role===null) return;
+      u.name=name; u.email=email; u.role=role; save.users(); loadUsers();
+    }
+    function deleteUser(id){
+      if(!confirm('Excluir usuário?')) return;
+      users = users.filter(u=>u.id!==id); save.users(); loadUsers();
+    }
+
+    // Relatórios
+    function loadReportFilters(){
+      const s=byId('report-sales-service'); if(!s) return;
+      s.innerHTML='<option value="">Todos os serviços</option>';
+      services.forEach(svc=>{ const o=document.createElement('option'); o.value=svc.id; o.textContent=svc.name; s.appendChild(o); });
+    }
+    function generateSalesReport(){
+      const start=byId('report-sales-date-start').value;
+      const end=byId('report-sales-date-end').value;
+      const serviceId=parseInt(byId('report-sales-service').value) || null;
+      let filtered = sales;
+      if(start) filtered = filtered.filter(s=>s.date>=start);
+      if(end) filtered = filtered.filter(s=>s.date<=end);
+      if(serviceId) filtered = filtered.filter(s=>s.serviceId===serviceId);
+      const total = filtered.reduce((t,s)=>{ const svc=services.find(x=>x.id==s.serviceId); return t + (svc?parseFloat(svc.price):0); },0);
+      const avg = filtered.length>0 ? total/filtered.length : 0;
+      const t=byId('sales-report-body'); t.innerHTML='';
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${start&&end?`${formatDate(start)} a ${formatDate(end)}`:'Todo período'}</td><td>${filtered.length}</td><td>${currency(total)}</td><td>${currency(avg)}</td>`;
+      t.appendChild(tr);
+    }
+
+    // Perfil
+    function fillProfile(){
+      byId('profile-name').value = currentUser.name;
+      byId('profile-email').value = currentUser.email;
+      byId('profile-phone').value = currentUser.phone || '';
+    }
+    function updateProfile(){
+      const name=byId('profile-name').value.trim();
+      const email=byId('profile-email').value.trim();
+      const phone=byId('profile-phone').value.trim();
+      const pass=byId('profile-password').value;
+      const pass2=byId('profile-password-confirm').value;
+      if(!name || !email) return alert('Preencha nome e e-mail');
+      if(pass && pass!==pass2) return alert('As senhas não coincidem');
+      currentUser.name=name; currentUser.email=email; currentUser.phone=phone;
+      if(pass) currentUser.password=pass;
+      byId('user-name').textContent = currentUser.name;
+      byId('user-avatar').textContent = currentUser.name.charAt(0).toUpperCase();
+      save.users();
+      alert('Perfil atualizado');
+    }
+
+    // Inicialização
+    function init(){
+      if(!localStorage.getItem('users')) save.users();
+      if(!localStorage.getItem('categories')){
+        categories = [
+          { id:1, name:'Vistorias', description:'Serviços de vistoria veicular', createdAt:new Date().toISOString() },
+          { id:2, name:'Consultas', description:'Consultas e laudos', createdAt:new Date().toISOString() }
+        ];
+        save.categories();
+      }
+      if(!localStorage.getItem('services')){
+        services = [
+          { id:1, code:'001', name:'Vistoria Completa', price:150, cost:50, duration:60, categoryId:1, createdAt:new Date().toISOString() },
+          { id:2, code:'002', name:'Consulta de Sinistros', price:50, cost:10, duration:15, categoryId:2, createdAt:new Date().toISOString() }
+        ];
+        save.services();
+      }
+      updateDashboard();
+      byId('sale-date').value = todayISO();
+      byId('scheduling-date').value = todayISO();
+      byId('scheduling-time').value = '09:00';
+      byId('report-sales-date-start').value = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
+      byId('report-sales-date-end').value = todayISO();
+    }
+    function sair(){ if(confirm('Deseja sair?')) alert('Sistema encerrado'); }
+
+    // Iniciar
+    init();
+  </script>
+</body>
+</html>
