@@ -2,996 +2,1688 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Flex Vistorias - Sistema Corrigido</title>
+  <title>Flex Vistorias - Sistema Completo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
-      --primary:#2c3e50; --secondary:#3498db; --light:#f5f7fa; --white:#fff;
-      --muted:#6b7280; --success:#16a34a; --danger:#dc2626; --warning:#d97706;
+      --primary:#1a1a1a; --secondary:#ff6b35; --accent:#ff8c42; --light:#f8f9fa; --white:#ffffff;
+      --muted:#6c757d; --success:#28a745; --danger:#dc3545; --warning:#ffc107; --info:#17a2b8;
+      --dark:#212529; --orange-light:#fff3e0; --orange-dark:#e65c00;
     }
-    * { box-sizing: border-box; }
-    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial; background:var(--light); color:#111827; display:flex; min-height:100vh; }
-    .sidebar { width:260px; background:var(--primary); color:var(--white); padding:16px 0; display:flex; flex-direction:column; }
-    .logo { padding:0 20px 16px; margin-bottom:8px; border-bottom:1px solid rgba(255,255,255,.1) }
-    .logo h2 { margin:0; font-size:20px; font-weight:700; letter-spacing:.3px; }
-    .menu { list-style:none; margin:8px 0 0; padding:0; }
-    .menu li { display:flex; align-items:center; gap:10px; padding:10px 18px; cursor:pointer; transition:.2s; border-left:4px solid transparent; }
-    .menu li:hover { background:rgba(255,255,255,.08); }
-    .menu li.active { background:rgba(255,255,255,.12); border-left-color:#fff; }
-    .logout { margin-top:auto; padding:8px 0; border-top:1px solid rgba(255,255,255,.1) }
-    .main { flex:1; padding:20px; overflow:auto; }
-    .header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
-    .header h1 { margin:0; font-size:22px; }
-    .userbox { display:flex; align-items:center; gap:10px; color:#374151; }
-    .avatar { width:36px; height:36px; background:var(--secondary); color:#fff; border-radius:50%; display:grid; place-items:center; font-weight:700; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background:#f8f9fa; color:#212529; display:flex; min-height:100vh; }
+    
+    /* Sidebar Modernizada */
+    .sidebar { width:280px; background:var(--primary); color:var(--white); padding:0; display:flex; flex-direction:column; transition: all 0.3s; box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
+    .logo { padding:24px; margin-bottom:0; border-bottom:1px solid rgba(255,107,53,0.2); background:linear-gradient(135deg, var(--primary) 0%, #2a2a2a 100%); }
+    .logo h2 { margin:0; font-size:22px; font-weight:700; display:flex; align-items:center; gap:10px; }
+    .logo i { color:var(--secondary); filter: drop-shadow(0 2px 4px rgba(255,107,53,0.3)); }
+    .menu { list-style:none; margin:0; padding:16px 0; flex:1; }
+    .menu li { display:flex; align-items:center; gap:12px; padding:12px 24px; cursor:pointer; transition:all 0.3s; border-left:4px solid transparent; position: relative; overflow: hidden; }
+    .menu li:before { content: ''; position: absolute; left: -100%; top: 0; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,107,53,0.1), transparent); transition: left 0.5s; }
+    .menu li:hover:before { left: 100%; }
+    .menu li:hover { background:rgba(255,107,53,0.08); transform: translateX(5px); }
+    .menu li.active { background:linear-gradient(90deg, rgba(255,107,53,0.15), transparent); border-left-color:var(--secondary); box-shadow: inset 0 0 20px rgba(255,107,53,0.1); }
+    .menu li i { width:20px; text-align:center; transition: all 0.3s; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2)); }
+    .menu li:hover i { transform: scale(1.1); color: var(--accent); filter: drop-shadow(0 2px 6px rgba(255,107,53,0.4)); }
+    .menu li.active i { color: var(--secondary); transform: scale(1.1); filter: drop-shadow(0 2px 8px rgba(255,107,53,0.6)); }
+    .logout { padding:16px 24px; border-top:1px solid rgba(255,107,53,0.2); background:linear-gradient(135deg, #2a2a2a 0%, var(--primary) 100%); }
+    
+    /* Main Content */
+    .main { flex:1; padding:0; overflow:hidden; display:flex; flex-direction:column; }
+    .header { background:var(--white); padding:20px 30px; border-bottom:1px solid #dee2e6; box-shadow:0 2px 10px rgba(0,0,0,0.08); }
+    .header-content { display:flex; align-items:center; justify-content:space-between; max-width:1400px; margin:0 auto; }
+    .header h1 { margin:0; font-size:28px; font-weight:700; color:var(--primary); background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .userbox { display:flex; align-items:center; gap:15px; }
+    .user-info { text-align:right; }
+    .user-name { font-weight:600; color:var(--primary); }
+    .user-role { font-size:12px; color:var(--muted); }
+    .avatar { width:44px; height:44px; background:linear-gradient(135deg, var(--secondary), var(--accent)); color:#fff; border-radius:12px; display:grid; place-items:center; font-weight:700; font-size:18px; box-shadow: 0 4px 8px rgba(255,107,53,0.3); }
+    
+    /* Content Area */
+    .content { flex:1; padding:30px; overflow-y:auto; background:#f8f9fa; }
+    .container { max-width:1400px; margin:0 auto; }
+    
+    /* Cards Modernizados */
+    .cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:24px; margin-bottom:30px; }
+    .card { background:var(--white); border-radius:16px; padding:24px; box-shadow:0 4px 20px rgba(0,0,0,0.08); border:1px solid #e9ecef; transition:all 0.3s; position: relative; overflow: hidden; }
+    .card:before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--secondary), var(--accent)); }
+    .card:hover { transform:translateY(-5px); box-shadow:0 8px 30px rgba(0,0,0,0.12); }
+    .card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+    .card-icon { width:60px; height:60px; border-radius:16px; display:grid; place-items:center; font-size:24px; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: relative; }
+    .card-icon:before { content: ''; position: absolute; width: 100%; height: 100%; border-radius: 16px; background: inherit; filter: blur(8px); opacity: 0.3; z-index: -1; }
+    .card-icon.primary { background:linear-gradient(135deg, var(--secondary), var(--accent)); color:#fff; }
+    .card-icon.success { background:linear-gradient(135deg, #28a745, #20c997); color:#fff; }
+    .card-icon.danger { background:linear-gradient(135deg, #dc3545, #e83e8c); color:#fff; }
+    .card-icon.warning { background:linear-gradient(135deg, #ffc107, #fd7e14); color:#fff; }
+    .card-icon.purple { background:linear-gradient(135deg, #6f42c1, #e83e8c); color:#fff; }
+    .card-icon.info { background:linear-gradient(135deg, #17a2b8, #20c997); color:#fff; }
+    .card:hover .card-icon { transform: scale(1.1) rotate(5deg); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+    .card h4 { margin:0; font-size:14px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.5px; }
+    .card .val { font-size:32px; font-weight:800; margin:8px 0; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .card .progress { height:8px; background:#e9ecef; border-radius:4px; margin:12px 0; overflow:hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
+    .card .progress-bar { height:100%; border-radius:4px; transition: width 1s ease-in-out; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .card-footer { display:flex; justify-content:space-between; align-items:center; margin-top:12px; font-size:13px; color:var(--muted); }
+    
+    /* Panels */
+    .panel { background:var(--white); border-radius:16px; padding:28px; box-shadow:0 4px 20px rgba(0,0,0,0.08); border:1px solid #e9ecef; margin-bottom:30px; position: relative; overflow: hidden; }
+    .panel:before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--secondary), var(--accent)); }
+    .panel-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+    .panel h3 { margin:0; font-size:20px; font-weight:700; color:var(--primary); }
+    .panel-actions { display:flex; gap:10px; }
+    
+    /* Forms Modernizados */
+    .row { display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:16px; margin-bottom:16px; }
+    .form-group { margin-bottom:20px; position: relative; }
+    .form-label { display:block; margin-bottom:8px; font-weight:600; color:var(--primary); font-size:14px; }
+    input, select, textarea { width:100%; padding:12px 16px; border:2px solid #e9ecef; border-radius:10px; outline:none; font-size:14px; transition:all 0.3s; background:var(--white); }
+    input:focus, select:focus, textarea:focus { border-color:var(--secondary); box-shadow:0 0 0 3px rgba(255,107,53,0.1); transform: translateY(-2px); }
+    .btn { border:0; border-radius:10px; padding:12px 24px; font-weight:600; cursor:pointer; transition:all 0.3s; font-size:14px; display:inline-flex; align-items:center; gap:8px; position: relative; overflow: hidden; }
+    .btn:before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transition: left 0.5s; }
+    .btn:hover:before { left: 100%; }
+    .btn-primary { background:linear-gradient(135deg, var(--secondary), var(--accent)); color:#fff; box-shadow: 0 4px 12px rgba(255,107,53,0.3); }
+    .btn-primary:hover { background:linear-gradient(135deg, var(--accent), var(--secondary)); transform:translateY(-2px); box-shadow: 0 6px 20px rgba(255,107,53,0.4); }
+    .btn-success { background:linear-gradient(135deg, #28a745, #20c997); color:#fff; box-shadow: 0 4px 12px rgba(40,167,69,0.3); }
+    .btn-success:hover { transform:translateY(-2px); box-shadow: 0 6px 20px rgba(40,167,69,0.4); }
+    .btn-danger { background:linear-gradient(135deg, #dc3545, #e83e8c); color:#fff; box-shadow: 0 4px 12px rgba(220,53,69,0.3); }
+    .btn-danger:hover { transform:translateY(-2px); box-shadow: 0 6px 20px rgba(220,53,69,0.4); }
+    .btn-warning { background:linear-gradient(135deg, #ffc107, #fd7e14); color:#fff; box-shadow: 0 4px 12px rgba(255,193,7,0.3); }
+    .btn-warning:hover { transform:translateY(-2px); box-shadow: 0 6px 20px rgba(255,193,7,0.4); }
+    .btn-muted { background:#f8f9fa; color:#495057; border:1px solid #e9ecef; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+    .btn-muted:hover { background:#e9ecef; transform:translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    
+    /* Tabs */
+    .tabs { display:flex; border-bottom:2px solid #e9ecef; margin-bottom:24px; }
+    .tab { padding:12px 24px; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; font-weight:600; color:#6c757d; transition:all 0.3s; position: relative; }
+    .tab:after { content: ''; position: absolute; bottom: -2px; left: 50%; width: 0; height: 2px; background: var(--secondary); transition: all 0.3s; transform: translateX(-50%); }
+    .tab:hover:after, .tab.active:after { width: 100%; }
+    .tab.active { color:var(--secondary); }
+    
+    /* Charts Container */
+    .charts-grid { display:grid; grid-template-columns:2fr 1fr; gap:24px; margin-bottom:30px; }
+    .chart-container { background:var(--white); border-radius:16px; padding:24px; box-shadow:0 4px 20px rgba(0,0,0,0.08); border:1px solid #e9ecef; position: relative; overflow: hidden; }
+    .chart-container:before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--secondary), var(--accent)); }
+    .chart-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+    .chart-title { font-size:18px; font-weight:600; color:var(--primary); }
+    
+    /* Tables Modernizadas */
+    .table-container { overflow-x:auto; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    table { width:100%; border-collapse:separate; border-spacing:0; background: var(--white); border-radius: 12px; overflow: hidden; }
+    th, td { padding:16px 12px; text-align:left; border-bottom:1px solid #e9ecef; font-size:14px; }
+    thead th { background:linear-gradient(135deg, var(--primary), #2a2a2a); color:#fff; font-weight:600; position:sticky; top:0; }
+    tbody tr { transition:background 0.3s; }
+    tbody tr:hover { background:var(--orange-light); transform: translateX(5px); }
+    
+    /* Status Badges */
+    .status-badge { padding:6px 12px; border-radius:20px; font-size:12px; font-weight:600; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .status-pago { background:linear-gradient(135deg, #d4edda, #c3e6cb); color:#155724; }
+    .status-pendente { background:linear-gradient(135deg, #fff3cd, #ffeaa7); color:#856404; }
+    .status-agendado { background:linear-gradient(135deg, #cce7ff, #b3d9ff); color:#004085; }
+    .status-concluido { background:linear-gradient(135deg, #d1ecf1, #b8e0e6); color:#0c5460; }
+    .status-atrasado { background:linear-gradient(135deg, #f8d7da, #f5c6cb); color:#721c24; }
+    
+    /* Goals Section */
+    .goals-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:24px; }
+    .goal-card { background:var(--white); border-radius:16px; padding:24px; border-left:4px solid var(--secondary); box-shadow:0 4px 20px rgba(0,0,0,0.08); transition: all 0.3s; }
+    .goal-card:hover { transform:translateY(-3px); box-shadow:0 6px 25px rgba(0,0,0,0.12); }
+    .goal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+    .goal-title { font-weight:600; color:var(--primary); }
+    .goal-amount { font-size:24px; font-weight:700; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .goal-progress { margin:16px 0; }
+    .goal-stats { display:flex; justify-content:space-between; font-size:13px; color:#6c757d; }
+    
+    /* Filters */
+    .filters { background:#f8f9fa; padding:20px; border-radius:12px; margin-bottom:24px; border:1px solid #e9ecef; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .filter-row { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; }
+    
+    /* Sections */
     .section { display:none; }
-    .section.active { display:block; }
-    .cards { display:grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap:12px; margin:16px 0 20px; }
-    .card { background:#fff; border-radius:10px; padding:14px; box-shadow:0 1px 4px rgba(0,0,0,.06); }
-    .card h4 { margin:0 0 6px; font-size:12px; color:#6b7280; font-weight:600; letter-spacing:.3px; text-transform:uppercase; }
-    .card .val { font-size:22px; font-weight:800; }
-    .card.success .val { color:var(--success) }
-    .card.danger .val { color:var(--danger) }
-    .panel { background:#fff; border-radius:10px; padding:16px; box-shadow:0 1px 4px rgba(0,0,0,.06); }
-    .panel h3 { margin:0 0 10px; font-size:16px; }
-    .row { display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap:10px; }
-    .row-3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
-    .row-2 { grid-template-columns: repeat(2, minmax(0,1fr)); }
-    .row-1 { grid-template-columns: 1fr; }
-    input, select, textarea { width:100%; padding:10px 12px; border:1px solid #e5e7eb; border-radius:8px; outline:none; font-size:14px; }
-    input:focus, select:focus, textarea:focus { border-color:var(--secondary); box-shadow:0 0 0 3px rgba(52,152,219,.15); }
-    .btn { border:0; border-radius:8px; padding:10px 14px; font-weight:700; cursor:pointer; }
-    .btn-primary { background:var(--secondary); color:#fff; }
-    .btn-success { background:var(--success); color:#fff; }
-    .btn-danger { background:var(--danger); color:#fff; }
-    .btn-muted { background:#e5e7eb; color:#111827; }
-    .btn-warning { background:var(--warning); color:#fff; }
-    .actions { display:flex; gap:6px; }
-    .list { margin-top:12px; display:grid; gap:8px; }
-    .item { border:1px solid #e5e7eb; background:#fff; border-radius:8px; padding:10px; display:flex; align-items:center; justify-content:space-between; }
-    .item h4 { margin:0 0 4px; font-size:15px; }
-    .muted { color:#6b7280; font-size:13px; }
-    table { width:100%; border-collapse: collapse; }
-    th, td { padding:10px 8px; text-align:left; border-bottom:1px solid #eee; font-size:14px; }
-    thead th { color:#6b7280; font-weight:700; }
-    .calendar-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
-    .calendar-grid { display:grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap:6px; }
-    .day-name { text-align:center; font-weight:700; color:#6b7280; font-size:12px; }
-    .day { border:1px solid #e5e7eb; border-radius:8px; min-height:54px; display:grid; place-items:center; font-weight:700; cursor:pointer; }
-    .day.other { color:#9ca3af; }
-    .day.today { background:#eff6ff; border-color:#dbeafe; color:#1d4ed8; }
-    .day.has-event { background:#ecfdf5; border-color:#bbf7d0; color:#065f46; }
-    .checkbox { width:16px; height:16px; }
-    .status-badge { padding:4px 8px; border-radius:4px; font-size:12px; font-weight:600; }
-    .status-pago { background:#dcfce7; color:#166534; }
-    .status-pendente { background:#fef3c7; color:#92400e; }
-    .quick-actions { display:flex; gap:10px; margin:10px 0; }
-    .search-box { margin-bottom:15px; }
-    @media (max-width: 1080px) { .cards { grid-template-columns: repeat(2, minmax(0,1fr)); } .row { grid-template-columns: repeat(2, minmax(0,1fr)); } }
-    @media (max-width: 780px) { .sidebar { width:80px } .menu span { display:none } .logo h2 { font-size:16px } .cards { grid-template-columns: 1fr; } .row { grid-template-columns: 1fr; } }
+    .section.active { display:block; animation: fadeIn 0.5s ease-in-out; }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Config Tabs */
+    .config-tab { display:none; }
+    .config-tab.active { display:block; animation: fadeIn 0.5s ease-in-out; }
+    
+    /* Alertas */
+    .alert { padding:12px 16px; border-radius:8px; margin-bottom:16px; display:flex; align-items:center; gap:10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .alert-success { background:linear-gradient(135deg, #d4edda, #c3e6cb); color:#155724; border:1px solid #b8e0c6; }
+    .alert-error { background:linear-gradient(135deg, #f8d7da, #f5c6cb); color:#721c24; border:1px solid #f1b0b7; }
+    
+    /* Financial Summary */
+    .financial-summary { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:24px; }
+    .financial-card { background:var(--white); border-radius:12px; padding:20px; text-align:center; border:1px solid #e9ecef; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: all 0.3s; position: relative; overflow: hidden; }
+    .financial-card:before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; }
+    .financial-card.receita:before { background: linear-gradient(90deg, #28a745, #20c997); }
+    .financial-card.despesa:before { background: linear-gradient(90deg, #dc3545, #e83e8c); }
+    .financial-card.saldo:before { background: linear-gradient(90deg, var(--secondary), var(--accent)); }
+    .financial-card:hover { transform:translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
+    .financial-value { font-size:24px; font-weight:700; margin:8px 0; }
+    .financial-label { font-size:14px; color:#6c757d; }
+    
+    /* Floating Action Button */
+    .fab { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: linear-gradient(135deg, var(--secondary), var(--accent)); color: white; border-radius: 50%; display: grid; place-items: center; font-size: 20px; box-shadow: 0 6px 20px rgba(255,107,53,0.4); cursor: pointer; transition: all 0.3s; z-index: 1000; }
+    .fab:hover { transform: scale(1.1) rotate(90deg); box-shadow: 0 8px 25px rgba(255,107,53,0.6); }
+    
+    @media (max-width: 1024px) {
+      .charts-grid { grid-template-columns:1fr; }
+      .sidebar { width:80px; }
+      .menu span { display:none; }
+      .logo h2 span { display:none; }
+    }
+    
+    @media (max-width: 768px) {
+      .cards { grid-template-columns:1fr; }
+      .header-content { flex-direction:column; gap:15px; align-items:flex-start; }
+      .userbox { align-self:flex-end; }
+      .financial-summary { grid-template-columns:1fr; }
+    }
   </style>
 </head>
 <body>
+  <!-- Sidebar -->
   <aside class="sidebar">
-    <div class="logo"><h2>Flex Vistorias</h2></div>
+    <div class="logo">
+      <h2><i class="fa-solid fa-car-side"></i> <span>Flex Vistorias</span></h2>
+    </div>
     <ul class="menu">
-      <li class="active" onclick="showSection('dashboard', this)"><i class="fa-solid fa-gauge"></i><span>Dashboard</span></li>
+      <li class="active" onclick="showSection('dashboard', this)"><i class="fa-solid fa-gauge-high"></i><span>Dashboard</span></li>
       <li onclick="showSection('clientes', this)"><i class="fa-solid fa-users"></i><span>Clientes</span></li>
       <li onclick="showSection('servicos', this)"><i class="fa-solid fa-screwdriver-wrench"></i><span>Serviços</span></li>
       <li onclick="showSection('venda', this)"><i class="fa-solid fa-cash-register"></i><span>Nova Venda</span></li>
-      <li onclick="showSection('contas', this)"><i class="fa-solid fa-money-bill-wave"></i><span>Contas a Receber</span></li>
+      <li onclick="showSection('contas-receber', this)"><i class="fa-solid fa-money-bill-wave"></i><span>Contas a Receber</span></li>
+      <li onclick="showSection('contas-pagar', this)"><i class="fa-solid fa-credit-card"></i><span>Contas a Pagar</span></li>
       <li onclick="showSection('agendamento', this)"><i class="fa-regular fa-calendar"></i><span>Agendamentos</span></li>
-      <li onclick="showSection('categorias', this)"><i class="fa-solid fa-tags"></i><span>Categorias</span></li>
-      <li onclick="showSection('usuarios', this)"><i class="fa-solid fa-user-gear"></i><span>Usuários</span></li>
       <li onclick="showSection('relatorios', this)"><i class="fa-solid fa-chart-column"></i><span>Relatórios</span></li>
-      <li onclick="showSection('perfil', this)"><i class="fa-solid fa-user"></i><span>Perfil</span></li>
+      <li onclick="showSection('metas', this)"><i class="fa-solid fa-bullseye"></i><span>Metas</span></li>
+      <li onclick="showSection('configuracoes', this)"><i class="fa-solid fa-sliders"></i><span>Configurações</span></li>
     </ul>
     <div class="logout">
-      <li class="menu" style="list-style:none" onclick="sair()"><div style="display:flex;align-items:center;gap:10px;padding:10px 18px;cursor:pointer"><i class="fa-solid fa-right-from-bracket"></i><span>Sair</span></div></li>
+      <li class="menu" onclick="sair()">
+        <div style="display:flex;align-items:center;gap:10px;padding:0;cursor:pointer">
+          <i class="fa-solid fa-right-from-bracket"></i><span>Sair</span>
+        </div>
+      </li>
     </div>
   </aside>
 
+  <!-- Main Content -->
   <main class="main">
     <div class="header">
-      <h1 id="page-title">Dashboard</h1>
-      <div class="userbox">
-        <div id="notification-count" class="btn btn-danger" style="padding:4px 10px;font-size:12px;">0</div>
-        <div id="user-name">Administrador</div>
-        <div id="user-avatar" class="avatar">A</div>
+      <div class="header-content">
+        <h1 id="page-title">Dashboard</h1>
+        <div class="userbox">
+          <div class="user-info">
+            <div class="user-name" id="user-name">Administrador</div>
+            <div class="user-role">Supervisor</div>
+          </div>
+          <div id="user-avatar" class="avatar">A</div>
+        </div>
       </div>
     </div>
 
-    <!-- DASHBOARD -->
-    <section id="dashboard" class="section active">
-      <div class="cards">
-        <div class="card success">
-          <h4>Vendas do mês</h4>
-          <div id="sales-value" class="val">R$ 0,00</div>
-          <div id="sales-footer" class="muted">0 vendas</div>
-        </div>
-        <div class="card danger">
-          <h4>Contas pendentes</h4>
-          <div id="pending-value" class="val">0</div>
-          <div id="pending-footer" class="muted">Contas a receber</div>
-        </div>
-        <div class="card">
-          <h4>Total de clientes</h4>
-          <div id="clients-value" class="val">0</div>
-          <div class="muted">Clientes cadastrados</div>
-        </div>
-        <div class="card">
-          <h4>Serviços ativos</h4>
-          <div id="services-value" class="val">0</div>
-          <div class="muted">Serviços disponíveis</div>
-        </div>
-        <div class="card">
-          <h4>Agendamentos hoje</h4>
-          <div id="scheduling-value" class="val">0</div>
-          <div class="muted">Para hoje</div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <h3>Vendas mensais</h3>
-        <div style="height:260px"><canvas id="salesChart"></canvas></div>
-      </div>
-    </section>
-
-    <!-- CLIENTES -->
-    <section id="clientes" class="section">
-      <div class="panel">
-        <h3>Clientes</h3>
-        <div class="row row-3">
-          <input id="client-name" placeholder="Nome completo *">
-          <input id="client-email" placeholder="E-mail">
-          <input id="client-phone" placeholder="Telefone">
-          <input id="client-document" placeholder="CPF/CNPJ">
-          <select id="client-inspection-type">
-            <option value="">Tipo de Vistoria</option>
-            <option value="1">1 - Vistoria Veicular</option>
-            <option value="2">2 - Vistoria Cautelar</option>
-            <option value="3">3 - Consulta</option>
-          </select>
-          <button class="btn btn-primary" onclick="addClient()">Adicionar</button>
-          <input id="search-clients" placeholder="Buscar clientes..." oninput="searchClients()">
-        </div>
-        <div id="clients-container" class="list"></div>
-      </div>
-    </section>
-
-    <!-- SERVIÇOS -->
-    <section id="servicos" class="section">
-      <div class="panel">
-        <h3>Serviços</h3>
-        <div class="row row-3">
-          <input id="service-code" placeholder="Código (ex: 001, 002)">
-          <input id="service-name" placeholder="Nome do serviço *">
-          <input id="service-price" type="number" step="0.01" placeholder="Preço (R$) *">
-          <input id="service-cost" type="number" step="0.01" placeholder="Custo (R$) *">
-          <input id="service-duration" type="number" placeholder="Duração (min)">
-          <select id="service-category"></select>
-          <button class="btn btn-primary" onclick="addService()">Adicionar</button>
-          <input id="search-services" placeholder="Buscar serviços..." oninput="searchServices()">
-        </div>
-        <div id="services-container" class="list"></div>
-      </div>
-    </section>
-
-    <!-- NOVA VENDA - CORRIGIDO -->
-    <section id="venda" class="section">
-      <div class="panel">
-        <h3>Nova venda</h3>
-        <div class="row row-3">
-          <select id="sale-client"></select>
-          <select id="sale-service"></select>
-          <input id="sale-vehicle" placeholder="Veículo *">
-          <input id="sale-plate" placeholder="Placa *">
-          <input id="sale-date" type="date">
-          <select id="sale-payment">
-            <option value="dinheiro">Dinheiro</option>
-            <option value="cartao_credito">Cartão de Crédito</option>
-            <option value="cartao_debito">Cartão de Débito</option>
-            <option value="pix">PIX</option>
-          </select>
-          <select id="sale-status">
-            <option value="Pago">Pago</option>
-            <option value="Pendente" selected>Pendente</option>
-          </select>
-          <input id="sale-discount" type="number" step="0.01" placeholder="Desconto (R$)">
-          <input id="sale-notes" placeholder="Observações">
-          <div class="row-1">
-            <button class="btn btn-success" onclick="completeSale()">Finalizar venda</button>
-            <button class="btn btn-muted" onclick="clearSaleForm()" style="margin-top:5px;">Nova venda (limpar)</button>
-          </div>
-        </div>
-
-        <div id="sale-summary" class="panel" style="margin-top:12px; display:none;">
-          <h3>Resumo da Última Venda</h3>
-          <div class="row row-2">
-            <div><b>Cliente:</b> <span id="summary-client"></span></div>
-            <div><b>Serviço:</b> <span id="summary-service"></span></div>
-            <div><b>Veículo:</b> <span id="summary-vehicle"></span></div>
-            <div><b>Placa:</b> <span id="summary-plate"></span></div>
-            <div><b>Data:</b> <span id="summary-date"></span></div>
-            <div><b>Pagamento:</b> <span id="summary-payment"></span></div>
-            <div><b>Status:</b> <span id="summary-status"></span></div>
-            <div><b>Desconto:</b> <span id="summary-discount"></span></div>
-            <div class="row-1"><b>Observações:</b> <span id="summary-notes"></span></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- CONTAS A RECEBER - CORRIGIDO -->
-    <section id="contas" class="section">
-      <div class="panel">
-        <h3>Contas a receber</h3>
+    <div class="content">
+      <div class="container">
         
-        <div class="search-box">
-          <div class="row row-3">
-            <input id="search-bills-client" placeholder="Buscar por cliente...">
-            <input id="search-bills-vehicle" placeholder="Buscar por veículo...">
-            <input id="search-bills-plate" placeholder="Buscar por placa...">
-            <input type="date" id="search-bills-date-start" placeholder="Data início">
-            <input type="date" id="search-bills-date-end" placeholder="Data fim">
-            <select id="search-bills-status">
-              <option value="">Todos os status</option>
-              <option value="Pago">Pago</option>
-              <option value="Pendente">Pendente</option>
-            </select>
-            <button class="btn btn-primary" onclick="searchBills()">Buscar</button>
-            <button class="btn btn-muted" onclick="clearBillSearch()">Limpar</button>
+        <!-- DASHBOARD -->
+        <section id="dashboard" class="section active">
+          <!-- Cards Resumo -->
+          <div class="cards">
+            <div class="card">
+              <div class="card-header">
+                <h4>Faturamento Mensal</h4>
+                <div class="card-icon primary"><i class="fa-solid fa-dollar-sign"></i></div>
+              </div>
+              <div id="sales-value" class="val">R$ 0,00</div>
+              <div class="progress">
+                <div id="revenue-progress" class="progress-bar" style="background:linear-gradient(90deg, var(--secondary), var(--accent)); width:0%"></div>
+              </div>
+              <div class="card-footer">
+                <span id="sales-footer">0 vendas</span>
+                <span id="revenue-goal">Meta: R$ 10.000</span>
+              </div>
+            </div>
+            
+            <div class="card">
+              <div class="card-header">
+                <h4>Contas a Receber</h4>
+                <div class="card-icon danger"><i class="fa-solid fa-clock"></i></div>
+              </div>
+              <div id="pending-value" class="val">0</div>
+              <div class="progress">
+                <div id="pending-progress" class="progress-bar" style="background:linear-gradient(90deg, #dc3545, #e83e8c); width:0%"></div>
+              </div>
+              <div class="card-footer">
+                <span id="pending-footer">A receber</span>
+                <span id="pending-amount">R$ 0,00</span>
+              </div>
+            </div>
+            
+            <div class="card">
+              <div class="card-header">
+                <h4>Contas a Pagar</h4>
+                <div class="card-icon warning"><i class="fa-solid fa-credit-card"></i></div>
+              </div>
+              <div id="payables-value" class="val">0</div>
+              <div class="progress">
+                <div id="payables-progress" class="progress-bar" style="background:linear-gradient(90deg, #ffc107, #fd7e14); width:0%"></div>
+              </div>
+              <div class="card-footer">
+                <span id="payables-footer">A pagar</span>
+                <span id="payables-amount">R$ 0,00</span>
+              </div>
+            </div>
+            
+            <div class="card">
+              <div class="card-header">
+                <h4>Saldo do Mês</h4>
+                <div class="card-icon success"><i class="fa-solid fa-piggy-bank"></i></div>
+              </div>
+              <div id="balance-value" class="val">R$ 0,00</div>
+              <div class="progress">
+                <div id="balance-progress" class="progress-bar" style="background:linear-gradient(90deg, #28a745, #20c997); width:0%"></div>
+              </div>
+              <div class="card-footer">
+                <span>Resultado</span>
+                <span id="balance-status">Positivo</span>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div class="quick-actions">
-          <button class="btn btn-success" onclick="receiveSelectedBills()">Receber selecionadas</button>
-          <button class="btn btn-warning" onclick="selectAllBills()">Selecionar todas</button>
-          <button class="btn btn-muted" onclick="deselectAllBills()">Desmarcar todas</button>
-        </div>
-
-        <table>
-          <thead>
-            <tr>
-              <th width="30"><input type="checkbox" id="select-all-bills" onchange="toggleSelectAllBills(this)"></th>
-              <th>Venda</th>
-              <th>Cliente</th>
-              <th>Veículo</th>
-              <th>Placa</th>
-              <th>Serviço</th>
-              <th>Data</th>
-              <th>Valor</th>
-              <th>Status</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody id="bills-table-body"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- AGENDAMENTOS -->
-    <section id="agendamento" class="section">
-      <div class="panel">
-        <h3>Agendamentos</h3>
-        <div class="row row-3">
-          <select id="scheduling-client"></select>
-          <select id="scheduling-service"></select>
-          <input id="scheduling-date" type="date">
-          <input id="scheduling-time" type="time">
-          <input id="scheduling-notes" placeholder="Observações">
-          <button class="btn btn-primary" onclick="addScheduling()">Agendar</button>
-        </div>
-      </div>
-
-      <div class="panel" style="margin-top:12px;">
-        <div class="calendar-head">
-          <button class="btn btn-muted" onclick="prevMonth()"><i class="fa-solid fa-chevron-left"></i></button>
-          <div id="current-month" style="font-weight:800"></div>
-          <button class="btn btn-muted" onclick="nextMonth()"><i class="fa-solid fa-chevron-right"></i></button>
-        </div>
-        <div class="calendar-grid" id="calendar-weekdays">
-          <div class="day-name">Dom</div><div class="day-name">Seg</div><div class="day-name">Ter</div><div class="day-name">Qua</div><div class="day-name">Qui</div><div class="day-name">Sex</div><div class="day-name">Sáb</div>
-        </div>
-        <div class="calendar-grid" id="calendar-days"></div>
-      </div>
-
-      <div class="panel" style="margin-top:12px;">
-        <div class="search-box">
-          <div class="row">
-            <input id="search-scheduling" placeholder="Buscar agendamentos por cliente, serviço ou observações..." oninput="searchScheduling()">
+          <!-- Resumo Financeiro -->
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Resumo Financeiro do Mês</h3>
+            </div>
+            <div class="financial-summary">
+              <div class="financial-card receita">
+                <div class="financial-label">Receitas</div>
+                <div id="monthly-revenue" class="financial-value">R$ 0,00</div>
+                <div class="financial-label">Faturamento Total</div>
+              </div>
+              <div class="financial-card despesa">
+                <div class="financial-label">Despesas</div>
+                <div id="monthly-expenses" class="financial-value">R$ 0,00</div>
+                <div class="financial-label">Custos e Despesas</div>
+              </div>
+              <div class="financial-card saldo">
+                <div class="financial-label">Saldo Líquido</div>
+                <div id="monthly-balance" class="financial-value">R$ 0,00</div>
+                <div class="financial-label">Resultado do Mês</div>
+              </div>
+            </div>
           </div>
-        </div>
-        <div id="scheduling-container" class="list"></div>
-      </div>
-    </section>
 
-    <!-- CATEGORIAS -->
-    <section id="categorias" class="section">
-      <div class="panel">
-        <h3>Categorias</h3>
-        <div class="row row-3">
-          <input id="category-name" placeholder="Nome da categoria">
-          <input id="category-description" placeholder="Descrição (opcional)">
-          <button class="btn btn-primary" onclick="addCategory()">Adicionar</button>
-        </div>
-        <div id="categories-container" class="list"></div>
-      </div>
-    </section>
-
-    <!-- USUÁRIOS -->
-    <section id="usuarios" class="section">
-      <div class="panel">
-        <h3>Usuários</h3>
-        <div class="row row-3">
-          <input id="user-name" placeholder="Nome">
-          <input id="user-email" placeholder="E-mail">
-          <input id="user-password" type="password" placeholder="Senha">
-          <select id="user-role">
-            <option value="admin">Administrador</option>
-            <option value="manager">Gerente</option>
-            <option value="attendant">Atendente</option>
-            <option value="viewer">Visualizador</option>
-          </select>
-          <button class="btn btn-primary" onclick="addUser()">Adicionar</button>
-        </div>
-        <div id="users-container" class="list"></div>
-      </div>
-    </section>
-
-    <!-- RELATÓRIOS - CORRIGIDO -->
-    <section id="relatorios" class="section">
-      <div class="panel">
-        <h3>Relatório de vendas</h3>
-        <div class="row row-3">
-          <input id="report-sales-date-start" type="date">
-          <input id="report-sales-date-end" type="date">
-          <select id="report-sales-client">
-            <option value="">Todos os clientes</option>
-          </select>
-          <select id="report-sales-service">
-            <option value="">Todos os serviços</option>
-          </select>
-          <select id="report-sales-status">
-            <option value="">Todos os status</option>
-            <option value="Pago">Pago</option>
-            <option value="Pendente">Pendente</option>
-          </select>
-          <button class="btn btn-primary" onclick="generateSalesReport()">Gerar Relatório</button>
-          <button class="btn btn-muted" onclick="window.print()">Imprimir</button>
-          <button class="btn btn-success" onclick="exportToExcel()">Exportar Excel</button>
-        </div>
-        
-        <div style="height:260px; margin-top:20px;">
-          <canvas id="salesReportChart"></canvas>
-        </div>
-        
-        <table style="margin-top:20px">
-          <thead>
-            <tr>
-              <th>Data</th>
-              <th>Cliente</th>
-              <th>Veículo</th>
-              <th>Placa</th>
-              <th>Serviço</th>
-              <th>Valor</th>
-              <th>Status</th>
-              <th>Pagamento</th>
-            </tr>
-          </thead>
-          <tbody id="sales-report-body"></tbody>
-        </table>
-        
-        <div style="margin-top:20px; padding:15px; background:#f8f9fa; border-radius:8px;">
-          <h4>Resumo do Relatório</h4>
-          <div class="row row-3">
-            <div><strong>Total de Vendas:</strong> <span id="report-total-sales">0</span></div>
-            <div><strong>Valor Total:</strong> <span id="report-total-value">R$ 0,00</span></div>
-            <div><strong>Valor Pendente:</strong> <span id="report-pending-value">R$ 0,00</span></div>
-            <div><strong>Valor Recebido:</strong> <span id="report-received-value">R$ 0,00</span></div>
-            <div><strong>Ticket Médio:</strong> <span id="report-average-ticket">R$ 0,00</span></div>
+          <!-- Gráficos -->
+          <div class="charts-grid">
+            <div class="chart-container">
+              <div class="chart-header">
+                <div class="chart-title">Fluxo de Caixa Mensal</div>
+                <select id="chart-period" onchange="updateCashFlowChart()">
+                  <option value="6">Últimos 6 meses</option>
+                  <option value="12" selected>Últimos 12 meses</option>
+                  <option value="24">Últimos 2 anos</option>
+                </select>
+              </div>
+              <div style="height:300px"><canvas id="cashFlowChart"></canvas></div>
+            </div>
+            
+            <div class="chart-container">
+              <div class="chart-header">
+                <div class="chart-title">Distribuição por Serviço</div>
+              </div>
+              <div style="height:300px"><canvas id="servicesChart"></canvas></div>
+            </div>
           </div>
-        </div>
-      </div>
-    </section>
 
-    <!-- PERFIL -->
-    <section id="perfil" class="section">
-      <div class="panel">
-        <h3>Meu perfil</h3>
-        <div class="row row-3">
-          <input id="profile-name" placeholder="Nome">
-          <input id="profile-email" placeholder="E-mail">
-          <input id="profile-phone" placeholder="Telefone">
-          <input id="profile-password" type="password" placeholder="Nova senha (opcional)">
-          <input id="profile-password-confirm" type="password" placeholder="Confirmar nova senha">
-          <button class="btn btn-primary" onclick="updateProfile()">Salvar</button>
+          <!-- Metas Rápidas -->
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Metas do Mês</h3>
+              <button class="btn btn-primary" onclick="showSection('metas')">
+                <i class="fa-solid fa-bullseye"></i> Gerenciar Metas
+              </button>
+            </div>
+            <div class="goals-grid">
+              <div class="goal-card">
+                <div class="goal-header">
+                  <div class="goal-title">Meta de Faturamento</div>
+                  <div class="goal-amount" id="revenue-goal-amount">R$ 10.000</div>
+                </div>
+                <div class="goal-progress">
+                  <div class="progress">
+                    <div id="revenue-goal-progress" class="progress-bar" style="background:linear-gradient(90deg, var(--secondary), var(--accent)); width:0%"></div>
+                  </div>
+                </div>
+                <div class="goal-stats">
+                  <span>Atual: R$ 0,00</span>
+                  <span id="revenue-goal-percent">0%</span>
+                </div>
+              </div>
+              
+              <div class="goal-card">
+                <div class="goal-header">
+                  <div class="goal-title">Meta de Vendas</div>
+                  <div class="goal-amount" id="sales-goal-amount">50 vendas</div>
+                </div>
+                <div class="goal-progress">
+                  <div class="progress">
+                    <div id="sales-goal-progress" class="progress-bar" style="background:linear-gradient(90deg, #28a745, #20c997); width:0%"></div>
+                  </div>
+                </div>
+                <div class="goal-stats">
+                  <span>Atual: 0 vendas</span>
+                  <span id="sales-goal-percent">0%</span>
+                </div>
+              </div>
+              
+              <div class="goal-card">
+                <div class="goal-header">
+                  <div class="goal-title">Meta de Economia</div>
+                  <div class="goal-amount" id="savings-goal-amount">R$ 2.000</div>
+                </div>
+                <div class="goal-progress">
+                  <div class="progress">
+                    <div id="savings-goal-progress" class="progress-bar" style="background:linear-gradient(90deg, #6f42c1, #e83e8c); width:0%"></div>
+                  </div>
+                </div>
+                <div class="goal-stats">
+                  <span>Atual: R$ 0,00</span>
+                  <span id="savings-goal-percent">0%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CLIENTES -->
+        <section id="clientes" class="section">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Gerenciamento de Clientes</h3>
+              <button class="btn btn-success" onclick="showClientForm()">
+                <i class="fa-solid fa-plus"></i> Novo Cliente
+              </button>
+            </div>
+            
+            <div class="filters">
+              <div class="filter-row">
+                <div class="form-group">
+                  <label class="form-label">Buscar Cliente</label>
+                  <input type="text" id="client-search" placeholder="Nome, email ou telefone" onkeyup="filterClients()">
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">Status</label>
+                  <select id="client-status-filter" onchange="filterClients()">
+                    <option value="all">Todos</option>
+                    <option value="active">Ativos</option>
+                    <option value="inactive">Inativos</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Telefone</th>
+                    <th>Veículos</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="clients-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+          
+          <!-- Formulário de Cliente -->
+          <div id="client-form-container" class="panel" style="display:none;">
+            <div class="panel-header">
+              <h3 id="client-form-title">Novo Cliente</h3>
+              <button class="btn btn-muted" onclick="hideClientForm()">
+                <i class="fa-solid fa-times"></i> Cancelar
+              </button>
+            </div>
+            
+            <form id="client-form" onsubmit="saveClient(event)">
+              <div class="row">
+                <div class="form-group">
+                  <label class="form-label">Nome Completo *</label>
+                  <input type="text" id="client-name" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Email</label>
+                  <input type="email" id="client-email">
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="form-group">
+                  <label class="form-label">Telefone *</label>
+                  <input type="tel" id="client-phone" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">CPF/CNPJ</label>
+                  <input type="text" id="client-document">
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Endereço</label>
+                <textarea id="client-address" rows="2"></textarea>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Observações</label>
+                <textarea id="client-notes" rows="3"></textarea>
+              </div>
+              
+              <button type="submit" class="btn btn-success">
+                <i class="fa-solid fa-save"></i> Salvar Cliente
+              </button>
+            </form>
+          </div>
+        </section>
+
+        <!-- SERVIÇOS -->
+        <section id="servicos" class="section">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Gerenciamento de Serviços</h3>
+              <button class="btn btn-success" onclick="showServiceForm()">
+                <i class="fa-solid fa-plus"></i> Novo Serviço
+              </button>
+            </div>
+            
+            <div class="cards">
+              <div class="card">
+                <div class="card-header">
+                  <h4>Vistoria Completa</h4>
+                  <div class="card-icon primary"><i class="fa-solid fa-car"></i></div>
+                </div>
+                <div class="val">R$ 150,00</div>
+                <div class="card-footer">
+                  <span>Duração: 1 hora</span>
+                  <span class="status-badge status-concluido">Ativo</span>
+                </div>
+              </div>
+              
+              <div class="card">
+                <div class="card-header">
+                  <h4>Vistoria Básica</h4>
+                  <div class="card-icon success"><i class="fa-solid fa-car-side"></i></div>
+                </div>
+                <div class="val">R$ 80,00</div>
+                <div class="card-footer">
+                  <span>Duração: 30 min</span>
+                  <span class="status-badge status-concluido">Ativo</span>
+                </div>
+              </div>
+              
+              <div class="card">
+                <div class="card-header">
+                  <h4>Vistoria de Moto</h4>
+                  <div class="card-icon warning"><i class="fa-solid fa-motorcycle"></i></div>
+                </div>
+                <div class="val">R$ 100,00</div>
+                <div class="card-footer">
+                  <span>Duração: 45 min</span>
+                  <span class="status-badge status-concluido">Ativo</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Serviço</th>
+                    <th>Descrição</th>
+                    <th>Preço</th>
+                    <th>Duração</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="services-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+          
+          <!-- Formulário de Serviço -->
+          <div id="service-form-container" class="panel" style="display:none;">
+            <div class="panel-header">
+              <h3 id="service-form-title">Novo Serviço</h3>
+              <button class="btn btn-muted" onclick="hideServiceForm()">
+                <i class="fa-solid fa-times"></i> Cancelar
+              </button>
+            </div>
+            
+            <form id="service-form" onsubmit="saveService(event)">
+              <div class="row">
+                <div class="form-group">
+                  <label class="form-label">Nome do Serviço *</label>
+                  <input type="text" id="service-name" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Preço (R$) *</label>
+                  <input type="number" id="service-price" step="0.01" required>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="form-group">
+                  <label class="form-label">Duração</label>
+                  <input type="text" id="service-duration" placeholder="Ex: 1 hora, 30 minutos">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Status</label>
+                  <select id="service-status">
+                    <option value="active">Ativo</option>
+                    <option value="inactive">Inativo</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Descrição</label>
+                <textarea id="service-description" rows="3"></textarea>
+              </div>
+              
+              <button type="submit" class="btn btn-success">
+                <i class="fa-solid fa-save"></i> Salvar Serviço
+              </button>
+            </form>
+          </div>
+        </section>
+
+        <!-- NOVA VENDA -->
+        <section id="venda" class="section">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Nova Venda</h3>
+            </div>
+            
+            <form id="sale-form" onsubmit="processSale(event)">
+              <div class="row">
+                <div class="form-group">
+                  <label class="form-label">Cliente *</label>
+                  <select id="sale-client" required>
+                    <option value="">Selecione um cliente</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Serviço *</label>
+                  <select id="sale-service" required onchange="updateSalePrice()">
+                    <option value="">Selecione um serviço</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="form-group">
+                  <label class="form-label">Data da Venda *</label>
+                  <input type="date" id="sale-date" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Valor (R$)</label>
+                  <input type="number" id="sale-price" step="0.01" readonly>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Observações</label>
+                <textarea id="sale-notes" rows="3"></textarea>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Status do Pagamento</label>
+                <select id="sale-status">
+                  <option value="pending">Pendente</option>
+                  <option value="paid">Pago</option>
+                </select>
+              </div>
+              
+              <button type="submit" class="btn btn-success">
+                <i class="fa-solid fa-cash-register"></i> Processar Venda
+              </button>
+            </form>
+          </div>
+        </section>
+
+        <!-- CONTAS A RECEBER -->
+        <section id="contas-receber" class="section">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Contas a Receber</h3>
+            </div>
+            
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Cliente</th>
+                    <th>Serviço</th>
+                    <th>Valor</th>
+                    <th>Vencimento</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="receivables-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- CONTAS A PAGAR -->
+        <section id="contas-pagar" class="section">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Gerenciamento de Contas a Pagar</h3>
+              <div class="panel-actions">
+                <button class="btn btn-primary" onclick="showExpenseTypeForm()">
+                  <i class="fa-solid fa-tags"></i> Tipos de Despesa
+                </button>
+                <button class="btn btn-success" onclick="showPayableForm()">
+                  <i class="fa-solid fa-plus"></i> Nova Despesa
+                </button>
+              </div>
+            </div>
+            
+            <div class="filters">
+              <div class="filter-row">
+                <div class="form-group">
+                  <label class="form-label">Tipo de Despesa</label>
+                  <select id="payable-type-filter" onchange="filterPayables()">
+                    <option value="all">Todos os Tipos</option>
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">Status</label>
+                  <select id="payable-status-filter" onchange="filterPayables()">
+                    <option value="all">Todos</option>
+                    <option value="pending">Pendentes</option>
+                    <option value="paid">Pagas</option>
+                    <option value="overdue">Atrasadas</option>
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">Período</label>
+                  <select id="payable-period-filter" onchange="filterPayables()">
+                    <option value="all">Todos</option>
+                    <option value="today">Hoje</option>
+                    <option value="week">Esta semana</option>
+                    <option value="month">Este mês</option>
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">&nbsp;</label>
+                  <button class="btn btn-muted" onclick="resetPayableFilters()" style="margin-top:8px;">
+                    <i class="fa-solid fa-rotate"></i> Limpar Filtros
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Descrição</th>
+                    <th>Tipo</th>
+                    <th>Fornecedor</th>
+                    <th>Valor</th>
+                    <th>Vencimento</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="payables-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+          
+          <!-- Formulário de Despesa -->
+          <div id="payable-form-container" class="panel" style="display:none;">
+            <div class="panel-header">
+              <h3 id="payable-form-title">Nova Despesa</h3>
+              <button class="btn btn-muted" onclick="hidePayableForm()">
+                <i class="fa-solid fa-times"></i> Cancelar
+              </button>
+            </div>
+            
+            <form id="payable-form" onsubmit="savePayable(event)">
+              <div class="row">
+                <div class="form-group">
+                  <label class="form-label">Descrição *</label>
+                  <input type="text" id="payable-description" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Tipo de Despesa *</label>
+                  <select id="payable-type" required>
+                    <option value="">Selecione um tipo</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="form-group">
+                  <label class="form-label">Fornecedor</label>
+                  <input type="text" id="payable-supplier">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Valor (R$) *</label>
+                  <input type="number" id="payable-value" step="0.01" required>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="form-group">
+                  <label class="form-label">Data de Vencimento *</label>
+                  <input type="date" id="payable-due-date" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Status</label>
+                  <select id="payable-status">
+                    <option value="pending">Pendente</option>
+                    <option value="paid">Pago</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Observações</label>
+                <textarea id="payable-notes" rows="3"></textarea>
+              </div>
+              
+              <button type="submit" class="btn btn-success">
+                <i class="fa-solid fa-save"></i> Salvar Despesa
+              </button>
+            </form>
+          </div>
+          
+          <!-- Modal Tipos de Despesa -->
+          <div id="expense-types-modal" class="panel" style="display:none;">
+            <div class="panel-header">
+              <h3>Tipos de Despesa</h3>
+              <button class="btn btn-muted" onclick="hideExpenseTypeForm()">
+                <i class="fa-solid fa-times"></i> Fechar
+              </button>
+            </div>
+            
+            <div class="filters">
+              <div class="filter-row">
+                <div class="form-group">
+                  <label class="form-label">Novo Tipo de Despesa</label>
+                  <input type="text" id="new-expense-type" placeholder="Ex: Aluguel, Material, Salários">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">&nbsp;</label>
+                  <button class="btn btn-primary" onclick="addExpenseType()" style="margin-top:8px;">
+                    <i class="fa-solid fa-plus"></i> Adicionar Tipo
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tipo de Despesa</th>
+                    <th>Total Gasto</th>
+                    <th>Quantidade</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="expense-types-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- AGENDAMENTOS -->
+        <section id="agendamento" class="section">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Agendamentos</h3>
+              <button class="btn btn-success" onclick="showSchedulingForm()">
+                <i class="fa-solid fa-plus"></i> Novo Agendamento
+              </button>
+            </div>
+            
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Cliente</th>
+                    <th>Serviço</th>
+                    <th>Data/Hora</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="schedulings-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- RELATÓRIOS -->
+        <section id="relatorios" class="section">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Relatórios</h3>
+              <div class="panel-actions">
+                <button class="btn btn-primary" onclick="generateReport()">
+                  <i class="fa-solid fa-file-export"></i> Gerar Relatório
+                </button>
+              </div>
+            </div>
+            
+            <div class="filters">
+              <div class="filter-row">
+                <div class="form-group">
+                  <label class="form-label">Tipo de Relatório</label>
+                  <select id="report-type">
+                    <option value="sales">Vendas</option>
+                    <option value="clients">Clientes</option>
+                    <option value="services">Serviços</option>
+                    <option value="receivables">Contas a Receber</option>
+                    <option value="payables">Contas a Pagar</option>
+                    <option value="financial">Resultado Financeiro</option>
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">Período Inicial</label>
+                  <input type="date" id="report-start-date">
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">Período Final</label>
+                  <input type="date" id="report-end-date">
+                </div>
+              </div>
+            </div>
+            
+            <div id="report-results" class="table-container" style="display:none;">
+              <div class="panel-header">
+                <h4 id="report-title">Relatório de Vendas</h4>
+                <button class="btn btn-muted" onclick="printReport()">
+                  <i class="fa-solid fa-print"></i> Imprimir
+                </button>
+              </div>
+              <table id="report-table">
+                <thead>
+                  <tr>
+                    <th>Data</th>
+                    <th>Descrição</th>
+                    <th>Categoria</th>
+                    <th>Valor</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="report-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- METAS -->
+        <section id="metas" class="section">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Metas</h3>
+              <button class="btn btn-success" onclick="showGoalForm()">
+                <i class="fa-solid fa-plus"></i> Nova Meta
+              </button>
+            </div>
+            
+            <div class="goals-grid">
+              <div class="goal-card">
+                <div class="goal-header">
+                  <div class="goal-title">Meta de Faturamento</div>
+                  <div class="goal-amount">R$ 10.000</div>
+                </div>
+                <div class="goal-progress">
+                  <div class="progress">
+                    <div class="progress-bar" style="background:linear-gradient(90deg, var(--secondary), var(--accent)); width:45%"></div>
+                  </div>
+                </div>
+                <div class="goal-stats">
+                  <span>Atual: R$ 4.500,00</span>
+                  <span>45%</span>
+                </div>
+              </div>
+              
+              <div class="goal-card">
+                <div class="goal-header">
+                  <div class="goal-title">Meta de Vendas</div>
+                  <div class="goal-amount">50 vendas</div>
+                </div>
+                <div class="goal-progress">
+                  <div class="progress">
+                    <div class="progress-bar" style="background:linear-gradient(90deg, #28a745, #20c997); width:60%"></div>
+                  </div>
+                </div>
+                <div class="goal-stats">
+                  <span>Atual: 30 vendas</span>
+                  <span>60%</span>
+                </div>
+              </div>
+              
+              <div class="goal-card">
+                <div class="goal-header">
+                  <div class="goal-title">Meta de Economia</div>
+                  <div class="goal-amount">R$ 2.000</div>
+                </div>
+                <div class="goal-progress">
+                  <div class="progress">
+                    <div class="progress-bar" style="background:linear-gradient(90deg, #6f42c1, #e83e8c); width:25%"></div>
+                  </div>
+                </div>
+                <div class="goal-stats">
+                  <span>Atual: R$ 500,00</span>
+                  <span>25%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CONFIGURAÇÕES -->
+        <section id="configuracoes" class="section">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Configurações do Sistema</h3>
+            </div>
+            
+            <div class="tabs">
+              <div class="tab active" onclick="showConfigTab('empresa')">Empresa</div>
+              <div class="tab" onclick="showConfigTab('financeiro')">Financeiro</div>
+              <div class="tab" onclick="showConfigTab('notificacoes')">Notificações</div>
+            </div>
+            
+            <div id="empresa" class="config-tab active">
+              <h4>Dados da Empresa</h4>
+              <div class="row">
+                <div class="form-group">
+                  <label class="form-label">Nome da Empresa</label>
+                  <input type="text" value="Flex Vistorias">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">CNPJ</label>
+                  <input type="text" value="12.345.678/0001-90">
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Endereço</label>
+                <input type="text" value="Rua das Vistorias, 123 - Centro">
+              </div>
+              
+              <button class="btn btn-primary">Salvar Configurações</button>
+            </div>
+            
+            <div id="financeiro" class="config-tab">
+              <h4>Configurações Financeiras</h4>
+              <div class="row">
+                <div class="form-group">
+                  <label class="form-label">Dias para Vencimento</label>
+                  <input type="number" value="30">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Multa por Atraso (%)</label>
+                  <input type="number" value="2">
+                </div>
+              </div>
+              
+              <button class="btn btn-primary">Salvar Configurações</button>
+            </div>
+            
+            <div id="notificacoes" class="config-tab">
+              <h4>Configurações de Notificação</h4>
+              <div class="form-group">
+                <label class="form-label">
+                  <input type="checkbox" checked> Notificar vencimentos de contas
+                </label>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">
+                  <input type="checkbox" checked> Notificar novos agendamentos
+                </label>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">
+                  <input type="checkbox"> Notificar metas atingidas
+                </label>
+              </div>
+              
+              <button class="btn btn-primary">Salvar Configurações</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Floating Action Button -->
+        <div class="fab" onclick="scrollToTop()">
+          <i class="fa-solid fa-chevron-up"></i>
         </div>
+
       </div>
-    </section>
+    </div>
   </main>
 
   <script>
-    // Estado
+    // ========== VARIÁVEIS GLOBAIS ==========
     let clients = JSON.parse(localStorage.getItem('clients')) || [];
-    let services = JSON.parse(localStorage.getItem('services')) || [];
-    let categories = JSON.parse(localStorage.getItem('categories')) || [];
+    let services = JSON.parse(localStorage.getItem('services')) || [
+      { id: 1, name: "Vistoria Completa", description: "Vistoria completa do veículo", price: 150.00, duration: "1 hora", status: "active" },
+      { id: 2, name: "Vistoria Básica", description: "Vistoria básica do veículo", price: 80.00, duration: "30 minutos", status: "active" },
+      { id: 3, name: "Vistoria de Motocicleta", description: "Vistoria específica para motos", price: 100.00, duration: "45 minutos", status: "active" }
+    ];
     let sales = JSON.parse(localStorage.getItem('sales')) || [];
-    let users = JSON.parse(localStorage.getItem('users')) || [{ id:1, name:"Administrador", email:"admin@flexvistorias.com", password:"admin123", role:"admin", phone:"(11) 99999-9999" }];
     let schedulings = JSON.parse(localStorage.getItem('schedulings')) || [];
-    let currentUser = users[0];
-    let currentDate = new Date();
-    let salesChart = null;
-    let lastSaleId = null; // Prevenir duplicação
-
-    // Helpers
-    const save = {
-      clients:()=>localStorage.setItem('clients', JSON.stringify(clients)),
-      services:()=>localStorage.setItem('services', JSON.stringify(services)),
-      categories:()=>localStorage.setItem('categories', JSON.stringify(categories)),
-      sales:()=>localStorage.setItem('sales', JSON.stringify(sales)),
-      users:()=>localStorage.setItem('users', JSON.stringify(users)),
-      schedulings:()=>localStorage.setItem('schedulings', JSON.stringify(schedulings)),
-    };
+    let goals = JSON.parse(localStorage.getItem('goals')) || [
+      { id: 1, type: 'revenue', target: 10000, current: 0, period: 'monthly', createdAt: new Date().toISOString() },
+      { id: 2, type: 'sales', target: 50, current: 0, period: 'monthly', createdAt: new Date().toISOString() },
+      { id: 3, type: 'savings', target: 2000, current: 0, period: 'monthly', createdAt: new Date().toISOString() }
+    ];
     
-    const byId = (id)=>document.getElementById(id);
-    const currency = (v)=>`R$ ${Number(v||0).toFixed(2).replace('.', ',')}`;
-    const todayISO = ()=> new Date().toISOString().split('T')[0];
-    const formatDate = (d)=>{ 
-      if(!d) return ''; 
-      const s = d.includes('T') ? d.split('T')[0] : d; 
-      const [y,m,da] = s.split('-'); 
-      return `${da}/${m}/${y}`; 
-    };
+    // VARIÁVEIS PARA CONTAS A PAGAR
+    let expenseTypes = JSON.parse(localStorage.getItem('expenseTypes')) || [
+      { id: 1, name: "Aluguel", description: "Aluguel do imóvel" },
+      { id: 2, name: "Material", description: "Materiais de escritório" },
+      { id: 3, name: "Salários", description: "Pagamento de funcionários" },
+      { id: 4, name: "Energia", description: "Conta de energia elétrica" },
+      { id: 5, name: "Internet", description: "Serviço de internet" }
+    ];
+    
+    let payables = JSON.parse(localStorage.getItem('payables')) || [];
 
-    // Navegação
-    function showSection(id, el){
-      document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-      byId(id).classList.add('active');
-      document.querySelectorAll('.menu li').forEach(i=>i.classList.remove('active'));
-      if(el) el.classList.add('active');
-      
-      const label = el?.querySelector('span')?.textContent || 'Dashboard';
-      byId('page-title').textContent = label;
-
-      // Carregar dados específicos de cada seção
-      if(id==='dashboard') updateDashboard();
-      if(id==='clientes') loadClients();
-      if(id==='servicos'){ loadCategoriesForServices(); loadServices(); }
-      if(id==='venda'){ 
-        loadClientsForSale(); 
-        loadServicesForSale(); 
-        clearSaleForm(); // SEMPRE limpar ao abrir nova venda
-      }
-      if(id==='contas') loadBills();
-      if(id==='agendamento'){ loadSchedulingFormOptions(); loadSchedulingCalendar(); loadSchedulingList(); }
-      if(id==='categorias') loadCategories();
-      if(id==='usuarios') loadUsers();
-      if(id==='relatorios'){ loadReportFilters(); generateSalesReport(); }
-      if(id==='perfil') fillProfile();
+    // ========== FUNÇÕES UTILITÁRIAS ==========
+    function byId(id) {
+      return document.getElementById(id);
     }
 
-    // Dashboard
-    function updateDashboard(){
-      const totalSales = sales.reduce((t,s)=>{
-        const svc = services.find(x=>x.id===s.serviceId);
-        return t + (svc ? parseFloat(svc.price) : 0);
-      },0);
-      
-      const pendingBills = sales.filter(s=>s.status!=='Pago').length;
-      const todaySchedulings = schedulings.filter(s=>{
-        const d = new Date(s.date);
-        const t = new Date();
-        return d.toDateString() === t.toDateString();
-      }).length;
-
-      byId('sales-value').textContent = currency(totalSales);
-      byId('sales-footer').textContent = `${sales.length} vendas`;
-      byId('pending-value').textContent = pendingBills;
-      byId('clients-value').textContent = clients.length;
-      byId('services-value').textContent = services.length;
-      byId('scheduling-value').textContent = todaySchedulings;
-
-      updateSalesChart();
+    function currency(value) {
+      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
     }
 
-    function updateSalesChart(){
-      const ctx = byId('salesChart').getContext('2d');
-      const monthTotals = Array(12).fill(0);
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('pt-BR');
+    }
+
+    function generateId() {
+      return Math.floor(Math.random() * 1000000) + 1;
+    }
+
+    function showAlert(message, type = 'success') {
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type}`;
+      alert.innerHTML = `
+        <i class="fa-solid fa-${type === 'success' ? 'check' : 'exclamation-triangle'}"></i>
+        ${message}
+      `;
       
-      sales.forEach(s=>{
-        const d = new Date(s.date); 
-        const svc = services.find(x=>x.id===s.serviceId);
-        if(!isNaN(d) && svc) monthTotals[d.getMonth()] += parseFloat(svc.price||0);
+      document.querySelector('.content').insertBefore(alert, document.querySelector('.container'));
+      
+      setTimeout(() => {
+        alert.remove();
+      }, 5000);
+    }
+
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ========== NAVEGAÇÃO E INTERFACE ==========
+    function showSection(sectionId, element = null) {
+      // Esconder todas as seções
+      document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
       });
       
-      if(salesChart) salesChart.destroy();
+      // Mostrar a seção selecionada
+      byId(sectionId).classList.add('active');
       
-      salesChart = new Chart(ctx, {
-        type:'line',
-        data:{ 
-          labels:['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],
-          datasets:[{ 
-            data:monthTotals, 
-            borderColor:'#3498db', 
-            backgroundColor:'rgba(52,152,219,.15)', 
-            fill:true, 
-            tension:.3 
-          }] 
+      // Atualizar título da página
+      const titles = {
+        dashboard: 'Dashboard',
+        clientes: 'Clientes',
+        servicos: 'Serviços',
+        venda: 'Nova Venda',
+        'contas-receber': 'Contas a Receber',
+        'contas-pagar': 'Contas a Pagar',
+        agendamento: 'Agendamentos',
+        relatorios: 'Relatórios',
+        metas: 'Metas',
+        configuracoes: 'Configurações'
+      };
+      
+      byId('page-title').textContent = titles[sectionId] || 'Flex Vistorias';
+      
+      // Atualizar menu ativo
+      if (element) {
+        document.querySelectorAll('.menu li').forEach(li => {
+          li.classList.remove('active');
+        });
+        element.classList.add('active');
+      }
+      
+      // Atualizar dados da seção
+      if (sectionId === 'dashboard') {
+        updateDashboard();
+      } else if (sectionId === 'clientes') {
+        loadClientsTable();
+      } else if (sectionId === 'servicos') {
+        loadServicesTable();
+      } else if (sectionId === 'venda') {
+        loadSaleForm();
+      } else if (sectionId === 'contas-receber') {
+        loadReceivablesTable();
+      } else if (sectionId === 'contas-pagar') {
+        loadPayablesTable();
+      } else if (sectionId === 'agendamento') {
+        loadSchedulingsTable();
+      }
+    }
+
+    function showConfigTab(tabId) {
+      document.querySelectorAll('.config-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      
+      byId(tabId).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    function sair() {
+      if (confirm('Tem certeza que deseja sair do sistema?')) {
+        localStorage.removeItem('userSession');
+        alert('Sistema encerrado. Recarregue a página para continuar.');
+      }
+    }
+
+    // ========== DASHBOARD ==========
+    let cashFlowChart = null;
+    let servicesChart = null;
+
+    function updateDashboard() {
+      const currentMonth = new Date().getMonth();
+      const currentYear = new Date().getFullYear();
+      
+      // Calcular receitas do mês
+      const monthlyRevenue = sales.reduce((total, sale) => {
+        const saleDate = new Date(sale.date);
+        if (saleDate.getMonth() === currentMonth && saleDate.getFullYear() === currentYear) {
+          const service = services.find(s => s.id === sale.serviceId);
+          return total + (service ? service.price : 0);
+        }
+        return total;
+      }, 0);
+      
+      // Calcular despesas do mês
+      const monthlyExpenses = payables.reduce((total, payable) => {
+        const payableDate = new Date(payable.dueDate);
+        if (payableDate.getMonth() === currentMonth && payableDate.getFullYear() === currentYear) {
+          return total + payable.value;
+        }
+        return total;
+      }, 0);
+      
+      // Calcular saldo
+      const monthlyBalance = monthlyRevenue - monthlyExpenses;
+      
+      // Contas a receber pendentes
+      const pendingReceivables = sales.filter(sale => sale.status === 'pending').length;
+      const pendingAmount = sales.reduce((total, sale) => {
+        if (sale.status === 'pending') {
+          const service = services.find(s => s.id === sale.serviceId);
+          return total + (service ? service.price : 0);
+        }
+        return total;
+      }, 0);
+      
+      // Contas a pagar pendentes
+      const pendingPayables = payables.filter(payable => payable.status === 'pending').length;
+      const payablesAmount = payables.reduce((total, payable) => {
+        if (payable.status === 'pending') {
+          return total + payable.value;
+        }
+        return total;
+      }, 0);
+      
+      // Atualizar cards do dashboard
+      byId('sales-value').textContent = currency(monthlyRevenue);
+      byId('sales-footer').textContent = `${sales.filter(s => {
+        const saleDate = new Date(s.date);
+        return saleDate.getMonth() === currentMonth && saleDate.getFullYear() === currentYear;
+      }).length} vendas`;
+      
+      byId('pending-value').textContent = pendingReceivables;
+      byId('pending-amount').textContent = currency(pendingAmount);
+      
+      byId('payables-value').textContent = pendingPayables;
+      byId('payables-amount').textContent = currency(payablesAmount);
+      
+      byId('balance-value').textContent = currency(monthlyBalance);
+      byId('balance-status').textContent = monthlyBalance >= 0 ? 'Positivo' : 'Negativo';
+      byId('balance-value').style.color = monthlyBalance >= 0 ? '#28a745' : '#dc3545';
+      
+      // Atualizar resumo financeiro
+      byId('monthly-revenue').textContent = currency(monthlyRevenue);
+      byId('monthly-expenses').textContent = currency(monthlyExpenses);
+      byId('monthly-balance').textContent = currency(monthlyBalance);
+      byId('monthly-balance').style.color = monthlyBalance >= 0 ? '#28a745' : '#dc3545';
+      
+      // Atualizar gráficos
+      updateCashFlowChart();
+      updateServicesChart();
+      
+      // Atualizar metas
+      updateGoalsProgress(monthlyRevenue, monthlyExpenses);
+    }
+
+    function updateCashFlowChart() {
+      const period = parseInt(byId('chart-period').value);
+      const ctx = byId('cashFlowChart').getContext('2d');
+      
+      // Gerar dados dos últimos meses
+      const labels = [];
+      const revenueData = [];
+      const expensesData = [];
+      const balanceData = [];
+      
+      const today = new Date();
+      for (let i = period - 1; i >= 0; i--) {
+        const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
+        labels.push(date.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' }));
+        
+        // Receitas do mês
+        const monthSales = sales.filter(sale => {
+          const saleDate = new Date(sale.date);
+          return saleDate.getMonth() === date.getMonth() && saleDate.getFullYear() === date.getFullYear();
+        });
+        
+        const monthRevenue = monthSales.reduce((total, sale) => {
+          const service = services.find(s => s.id === sale.serviceId);
+          return total + (service ? service.price : 0);
+        }, 0);
+        
+        // Despesas do mês
+        const monthPayables = payables.filter(payable => {
+          const payableDate = new Date(payable.dueDate);
+          return payableDate.getMonth() === date.getMonth() && payableDate.getFullYear() === date.getFullYear();
+        });
+        
+        const monthExpenses = monthPayables.reduce((total, payable) => total + payable.value, 0);
+        
+        revenueData.push(monthRevenue);
+        expensesData.push(monthExpenses);
+        balanceData.push(monthRevenue - monthExpenses);
+      }
+      
+      if (cashFlowChart) cashFlowChart.destroy();
+      
+      cashFlowChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Receitas',
+              data: revenueData,
+              borderColor: '#28a745',
+              backgroundColor: 'rgba(40, 167, 69, 0.1)',
+              borderWidth: 3,
+              fill: true,
+              tension: 0.4
+            },
+            {
+              label: 'Despesas',
+              data: expensesData,
+              borderColor: '#dc3545',
+              backgroundColor: 'rgba(220, 53, 69, 0.1)',
+              borderWidth: 3,
+              fill: true,
+              tension: 0.4
+            },
+            {
+              label: 'Saldo',
+              data: balanceData,
+              borderColor: '#ff6b35',
+              backgroundColor: 'rgba(255, 107, 53, 0.1)',
+              borderWidth: 3,
+              fill: true,
+              tension: 0.4
+            }
+          ]
         },
-        options:{ 
-          responsive:true, 
-          plugins:{ legend:{display:false} }, 
-          scales:{ y:{ beginAtZero:true } } 
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'top'
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return 'R$ ' + value.toLocaleString('pt-BR');
+                }
+              }
+            }
+          }
         }
       });
     }
 
-    // Clientes
-    function addClient(){
-      const name = byId('client-name').value.trim();
-      const email = byId('client-email').value.trim();
-      const phone = byId('client-phone').value.trim();
-      const document = byId('client-document').value.trim();
-      const inspectionType = byId('client-inspection-type').value;
-      
-      if(!name) return alert('Informe o nome do cliente');
-      
-      const newClient = { 
-        id: Date.now(), 
-        name, 
-        email, 
-        phone, 
-        document, 
-        inspectionType,
-        createdAt: new Date().toISOString() 
-      };
-      
-      clients.push(newClient);
-      save.clients();
-      
-      // Limpar campos
-      byId('client-name').value = '';
-      byId('client-email').value = '';
-      byId('client-phone').value = '';
-      byId('client-document').value = '';
-      byId('client-inspection-type').selectedIndex = 0;
-      
-      loadClients();
-      updateDashboard();
-      alert('Cliente adicionado com sucesso!');
-    }
-
-    function loadClients(list = null){
-      const container = byId('clients-container');
-      container.innerHTML = '';
-      
-      const clientsToShow = list || clients;
-      
-      if(clientsToShow.length === 0){
-        container.innerHTML = '<div class="item"><div><h4>Nenhum cliente cadastrado</h4></div></div>';
-        return;
-      }
-      
-      clientsToShow.forEach(client => {
-        const item = document.createElement('div');
-        item.className = 'item';
-        item.innerHTML = `
-          <div>
-            <h4>${client.name}</h4>
-            <div class="muted">
-              ${client.email || 'Sem e-mail'} | ${client.phone || 'Sem telefone'} | ${client.document || 'Sem documento'}
-              ${client.inspectionType ? ` | Tipo: ${client.inspectionType}` : ''}
-            </div>
-          </div>
-          <div class="actions">
-            <button class="btn btn-muted" onclick="editClient(${client.id})">Editar</button>
-            <button class="btn btn-danger" onclick="deleteClient(${client.id})">Excluir</button>
-          </div>
-        `;
-        container.appendChild(item);
-      });
-    }
-
-    function searchClients(){
-      const query = byId('search-clients').value.toLowerCase().trim();
-      
-      if(!query){
-        loadClients();
-        return;
-      }
-      
-      const filtered = clients.filter(client => 
-        client.name.toLowerCase().includes(query) ||
-        (client.email && client.email.toLowerCase().includes(query)) ||
-        (client.phone && client.phone.toLowerCase().includes(query)) ||
-        (client.document && client.document.toLowerCase().includes(query))
-      );
-      
-      loadClients(filtered);
-    }
-
-    // Serviços
-    function loadCategoriesForServices(){
-      const select = byId('service-category');
-      select.innerHTML = '<option value="">Selecione uma categoria</option>';
-      
-      categories.forEach(cat => {
-        const option = document.createElement('option');
-        option.value = cat.id;
-        option.textContent = cat.name;
-        select.appendChild(option);
-      });
-    }
-
-    function addService(){
-      const code = byId('service-code').value.trim();
-      const name = byId('service-name').value.trim();
-      const price = parseFloat(byId('service-price').value);
-      const cost = parseFloat(byId('service-cost').value);
-      const duration = parseInt(byId('service-duration').value) || null;
-      const categoryId = byId('service-category').value || null;
-      
-      if(!name || isNaN(price) || isNaN(cost)) {
-        return alert('Preencha nome, preço e custo do serviço');
-      }
-      
-      const newService = {
-        id: Date.now(),
-        code,
-        name,
-        price,
-        cost,
-        duration,
-        categoryId,
-        createdAt: new Date().toISOString()
-      };
-      
-      services.push(newService);
-      save.services();
-      
-      // Limpar campos
-      byId('service-code').value = '';
-      byId('service-name').value = '';
-      byId('service-price').value = '';
-      byId('service-cost').value = '';
-      byId('service-duration').value = '';
-      byId('service-category').selectedIndex = 0;
-      
-      loadServices();
-      updateDashboard();
-      alert('Serviço adicionado com sucesso!');
-    }
-
-    function loadServices(list = null){
-      const container = byId('services-container');
-      container.innerHTML = '';
-      
-      const servicesToShow = list || services;
-      
-      if(servicesToShow.length === 0){
-        container.innerHTML = '<div class="item"><div><h4>Nenhum serviço cadastrado</h4></div></div>';
-        return;
-      }
-      
-      servicesToShow.forEach(service => {
-        const category = categories.find(c => c.id === service.categoryId);
-        const item = document.createElement('div');
-        item.className = 'item';
-        item.innerHTML = `
-          <div>
-            <h4>${service.code ? service.code + ' - ' : ''}${service.name}</h4>
-            <div class="muted">
-              Preço: ${currency(service.price)} | Custo: ${currency(service.cost)} | 
-              ${service.duration ? service.duration + 'min' : 'Duração não definida'} |
-              ${category ? category.name : 'Sem categoria'}
-            </div>
-          </div>
-          <div class="actions">
-            <button class="btn btn-muted" onclick="editService(${service.id})">Editar</button>
-            <button class="btn btn-danger" onclick="deleteService(${service.id})">Excluir</button>
-          </div>
-        `;
-        container.appendChild(item);
-      });
-    }
-
-    function searchServices(){
-      const query = byId('search-services').value.toLowerCase().trim();
-      
-      if(!query){
-        loadServices();
-        return;
-      }
-      
-      const filtered = services.filter(service => 
-        service.name.toLowerCase().includes(query) ||
-        (service.code && service.code.toLowerCase().includes(query))
-      );
-      
-      loadServices(filtered);
-    }
-
-    // VENDAS - CORRIGIDO (Problema principal)
-    function loadClientsForSale(){
-      const select = byId('sale-client');
-      select.innerHTML = '<option value="">Selecione um cliente</option>';
-      
-      clients.forEach(client => {
-        const option = document.createElement('option');
-        option.value = client.id;
-        option.textContent = client.name;
-        select.appendChild(option);
-      });
-    }
-
-    function loadServicesForSale(){
-      const select = byId('sale-service');
-      select.innerHTML = '<option value="">Selecione um serviço</option>';
-      
-      services.forEach(service => {
-        const option = document.createElement('option');
-        option.value = service.id;
-        option.textContent = `${service.name} - ${currency(service.price)}`;
-        select.appendChild(option);
-      });
-    }
-
-    function clearSaleForm(){
-      byId('sale-client').selectedIndex = 0;
-      byId('sale-service').selectedIndex = 0;
-      byId('sale-vehicle').value = '';
-      byId('sale-plate').value = '';
-      byId('sale-date').value = todayISO();
-      byId('sale-payment').selectedIndex = 0;
-      byId('sale-status').selectedIndex = 1; // Pendente
-      byId('sale-discount').value = '';
-      byId('sale-notes').value = '';
-      lastSaleId = null; // Resetar prevenção de duplicação
-    }
-
-    function completeSale(){
-      // Prevenir duplicação de vendas
-      const currentTimestamp = Date.now();
-      if(lastSaleId && (currentTimestamp - lastSaleId) < 3000) {
-        return alert('Aguarde alguns segundos antes de fazer outra venda!');
-      }
-
-      const clientId = parseInt(byId('sale-client').value);
-      const serviceId = parseInt(byId('sale-service').value);
-      const vehicle = byId('sale-vehicle').value.trim();
-      const plate = byId('sale-plate').value.trim();
-      const date = byId('sale-date').value || todayISO();
-      const payment = byId('sale-payment').value;
-      const status = byId('sale-status').value;
-      const discount = parseFloat(byId('sale-discount').value) || 0;
-      const notes = byId('sale-notes').value.trim();
-      
-      // Validações reforçadas
-      if(!clientId || !serviceId) {
-        return alert('Selecione um cliente e um serviço');
-      }
-      
-      if(!vehicle || !plate) {
-        return alert('Informe o veículo e a placa');
-      }
-      
-      const service = services.find(s => s.id === serviceId);
-      if(!service) return alert('Serviço não encontrado');
-      
-      const total = service.price - discount;
-      
-      const newSale = {
-        id: currentTimestamp,
-        clientId,
-        serviceId,
-        vehicle,
-        plate,
-        date,
-        payment,
-        status,
-        discount,
-        total,
-        notes,
-        createdAt: new Date().toISOString()
-      };
-      
-      sales.push(newSale);
-      save.sales();
-      lastSaleId = currentTimestamp; // Registrar última venda
-      
-      // Mostrar resumo
-      const client = clients.find(c => c.id === clientId);
-      byId('summary-client').textContent = client.name;
-      byId('summary-service').textContent = `${service.name} - ${currency(service.price)}`;
-      byId('summary-vehicle').textContent = vehicle;
-      byId('summary-plate').textContent = plate;
-      byId('summary-date').textContent = formatDate(date);
-      byId('summary-payment').textContent = payment;
-      byId('summary-status').textContent = status;
-      byId('summary-discount').textContent = currency(discount);
-      byId('summary-notes').textContent = notes || 'Nenhuma';
-      byId('sale-summary').style.display = 'block';
-      
-      // Limpar campos automaticamente para nova venda
-      clearSaleForm();
-      
-      updateDashboard();
-      alert('Venda registrada com sucesso! Status: ' + status);
-    }
-
-    // CONTAS A RECEBER - CORRIGIDO
-    function loadBills(){
-      const tbody = byId('bills-table-body');
-      tbody.innerHTML = '';
+    function updateServicesChart() {
+      const ctx = byId('servicesChart').getContext('2d');
+      const serviceCounts = {};
       
       sales.forEach(sale => {
-        const client = clients.find(c => c.id === sale.clientId);
         const service = services.find(s => s.id === sale.serviceId);
-        
-        if(!client || !service) return;
-        
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><input type="checkbox" class="bill-checkbox" value="${sale.id}"></td>
-          <td>#${sale.id}</td>
-          <td>${client.name}</td>
-          <td>${sale.vehicle || 'Não informado'}</td>
-          <td>${sale.plate || 'Não informada'}</td>
-          <td>${service.name}</td>
-          <td>${formatDate(sale.date)}</td>
-          <td>${currency(sale.total)}</td>
-          <td><span class="status-badge ${sale.status === 'Pago' ? 'status-pago' : 'status-pendente'}">${sale.status}</span></td>
-          <td>
-            <button class="btn btn-success" onclick="receiveBill(${sale.id})" ${sale.status === 'Pago' ? 'disabled' : ''}>Receber</button>
-            <button class="btn btn-muted" onclick="editBill(${sale.id})">Editar</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function searchBills(){
-      const clientQuery = byId('search-bills-client').value.toLowerCase().trim();
-      const vehicleQuery = byId('search-bills-vehicle').value.toLowerCase().trim();
-      const plateQuery = byId('search-bills-plate').value.toLowerCase().trim();
-      const dateStart = byId('search-bills-date-start').value;
-      const dateEnd = byId('search-bills-date-end').value;
-      const statusQuery = byId('search-bills-status').value;
-      
-      const filtered = sales.filter(sale => {
-        const client = clients.find(c => c.id === sale.clientId);
-        const matchesClient = !clientQuery || (client && client.name.toLowerCase().includes(clientQuery));
-        const matchesVehicle = !vehicleQuery || sale.vehicle.toLowerCase().includes(vehicleQuery);
-        const matchesPlate = !plateQuery || sale.plate.toLowerCase().includes(plateQuery);
-        const matchesDateStart = !dateStart || sale.date >= dateStart;
-        const matchesDateEnd = !dateEnd || sale.date <= dateEnd;
-        const matchesStatus = !statusQuery || sale.status === statusQuery;
-        
-        return matchesClient && matchesVehicle && matchesPlate && matchesDateStart && matchesDateEnd && matchesStatus;
-      });
-      
-      // Recarregar tabela com resultados filtrados
-      const tbody = byId('bills-table-body');
-      tbody.innerHTML = '';
-      
-      filtered.forEach(sale => {
-        const client = clients.find(c => c.id === sale.clientId);
-        const service = services.find(s => s.id === sale.serviceId);
-        
-        if(!client || !service) return;
-        
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><input type="checkbox" class="bill-checkbox" value="${sale.id}"></td>
-          <td>#${sale.id}</td>
-          <td>${client.name}</td>
-          <td>${sale.vehicle || 'Não informado'}</td>
-          <td>${sale.plate || 'Não informada'}</td>
-          <td>${service.name}</td>
-          <td>${formatDate(sale.date)}</td>
-          <td>${currency(sale.total)}</td>
-          <td><span class="status-badge ${sale.status === 'Pago' ? 'status-pago' : 'status-pendente'}">${sale.status}</span></td>
-          <td>
-            <button class="btn btn-success" onclick="receiveBill(${sale.id})" ${sale.status === 'Pago' ? 'disabled' : ''}>Receber</button>
-            <button class="btn btn-muted" onclick="editBill(${sale.id})">Editar</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function clearBillSearch(){
-      byId('search-bills-client').value = '';
-      byId('search-bills-vehicle').value = '';
-      byId('search-bills-plate').value = '';
-      byId('search-bills-date-start').value = '';
-      byId('search-bills-date-end').value = '';
-      byId('search-bills-status').selectedIndex = 0;
-      loadBills();
-    }
-
-    function toggleSelectAllBills(checkbox){
-      const checkboxes = document.querySelectorAll('.bill-checkbox');
-      checkboxes.forEach(cb => {
-        cb.checked = checkbox.checked;
-      });
-    }
-
-    function selectAllBills(){
-      const checkboxes = document.querySelectorAll('.bill-checkbox');
-      checkboxes.forEach(cb => {
-        cb.checked = true;
-      });
-      byId('select-all-bills').checked = true;
-    }
-
-    function deselectAllBills(){
-      const checkboxes = document.querySelectorAll('.bill-checkbox');
-      checkboxes.forEach(cb => {
-        cb.checked = false;
-      });
-      byId('select-all-bills').checked = false;
-    }
-
-    function receiveSelectedBills(){
-      const checkboxes = document.querySelectorAll('.bill-checkbox:checked');
-      if(checkboxes.length === 0) {
-        return alert('Selecione pelo menos uma conta para receber');
-      }
-      
-      if(!confirm(`Deseja marcar ${checkboxes.length} conta(s) como recebida(s)?`)) return;
-      
-      checkboxes.forEach(checkbox => {
-        const saleId = parseInt(checkbox.value);
-        const sale = sales.find(s => s.id === saleId);
-        if(sale) {
-          sale.status = 'Pago';
+        if (service) {
+          serviceCounts[service.name] = (serviceCounts[service.name] || 0) + 1;
         }
       });
+
+      const labels = Object.keys(serviceCounts);
+      const data = Object.values(serviceCounts);
+
+      if (servicesChart) servicesChart.destroy();
       
-      save.sales();
-      loadBills();
-      updateDashboard();
-      alert(`${checkboxes.length} conta(s) marcada(s) como recebida(s)!`);
+      servicesChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: ['#ff6b35', '#28a745', '#ffc107', '#6f42c1', '#dc3545', '#17a2b8'],
+            borderWidth: 3,
+            borderColor: '#fff'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          }
+        }
+      });
     }
 
-    function receiveBill(id){
-      const sale = sales.find(s => s.id === id);
-      if(!sale) return;
+    function updateGoalsProgress(monthlyRevenue, monthlyExpenses) {
+      const monthlySavings = monthlyRevenue - monthlyExpenses;
       
-      sale.status = 'Pago';
-      save.sales();
-      loadBills();
-      updateDashboard();
-      alert('Conta marcada como recebida!');
+      goals.forEach(goal => {
+        if (goal.type === 'revenue') goal.current = monthlyRevenue;
+        if (goal.type === 'sales') {
+          const currentMonth = new Date().getMonth();
+          const currentYear = new Date().getFullYear();
+          goal.current = sales.filter(sale => {
+            const saleDate = new Date(sale.date);
+            return saleDate.getMonth() === currentMonth && saleDate.getFullYear() === currentYear;
+          }).length;
+        }
+        if (goal.type === 'savings') goal.current = Math.max(monthlySavings, 0);
+      });
+
+      saveGoals();
+      updateGoalsDisplay();
     }
 
-    function editBill(id){
-      const sale = sales.find(s => s.id === id);
-      if(!sale) return;
+    function updateGoalsDisplay() {
+      goals.forEach(goal => {
+        const progress = Math.min((goal.current / goal.target) * 100, 100);
+        
+        if (goal.type === 'revenue') {
+          byId('revenue-goal-progress').style.width = progress + '%';
+          byId('revenue-goal-percent').textContent = progress.toFixed(1) + '%';
+          byId('revenue-goal-amount').textContent = currency(goal.target);
+        } else if (goal.type === 'sales') {
+          byId('sales-goal-progress').style.width = progress + '%';
+          byId('sales-goal-percent').textContent = progress.toFixed(1) + '%';
+          byId('sales-goal-amount').textContent = goal.target + ' vendas';
+        } else if (goal.type === 'savings') {
+          byId('savings-goal-progress').style.width = progress + '%';
+          byId('savings-goal-percent').textContent = progress.toFixed(1) + '%';
+          byId('savings-goal-amount').textContent = currency(goal.target);
+        }
+      });
+    }
+
+    // ========== CLIENTES ==========
+    function loadClientsTable() {
+      const tbody = byId('clients-table-body');
+      tbody.innerHTML = '';
       
-      const newStatus = prompt('Novo status (Pago/Pendente):', sale.status);
-      if(newStatus === null) return;
+      clients.forEach(client => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${client.name}</td>
+          <td>${client.email || '-'}</td>
+          <td>${client.phone}</td>
+          <td>${client.vehicles || 0}</td>
+          <td><span class="status-badge ${client.status === 'active' ? 'status-concluido' : 'status-pendente'}">${client.status === 'active' ? 'Ativo' : 'Inativo'}</span></td>
+          <td>
+            <button class="btn btn-muted" onclick="editClient(${client.id})"><i class="fa-solid fa-edit"></i></button>
+            <button class="btn btn-danger" onclick="deleteClient(${client.id})"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function showClientForm(clientId = null) {
+      byId('client-form-container').style.display = 'block';
+      byId('client-form').reset();
       
-      if(newStatus !== 'Pago' && newStatus !== 'Pendente') {
-        return alert('Status deve ser "Pago" ou "Pendente"');
+      if (clientId) {
+        byId('client-form-title').textContent = 'Editar Cliente';
+        const client = clients.find(c => c.id === clientId);
+        
+        if (client) {
+          byId('client-name').value = client.name;
+          byId('client-email').value = client.email || '';
+          byId('client-phone').value = client.phone;
+          byId('client-document').value = client.document || '';
+          byId('client-address').value = client.address || '';
+          byId('client-notes').value = client.notes || '';
+          
+          byId('client-form').dataset.editingId = clientId;
+        }
+      } else {
+        byId('client-form-title').textContent = 'Novo Cliente';
+        delete byId('client-form').dataset.editingId;
+      }
+    }
+
+    function hideClientForm() {
+      byId('client-form-container').style.display = 'none';
+    }
+
+    function saveClient(event) {
+      event.preventDefault();
+      
+      const clientData = {
+        name: byId('client-name').value,
+        email: byId('client-email').value,
+        phone: byId('client-phone').value,
+        document: byId('client-document').value,
+        address: byId('client-address').value,
+        notes: byId('client-notes').value,
+        status: 'active',
+        createdAt: new Date().toISOString()
+      };
+      
+      const editingId = byId('client-form').dataset.editingId;
+      
+      if (editingId) {
+        // Editar cliente existente
+        const index = clients.findIndex(c => c.id === parseInt(editingId));
+        if (index !== -1) {
+          clients[index] = { ...clients[index], ...clientData };
+          showAlert('Cliente atualizado com sucesso!');
+        }
+      } else {
+        // Adicionar novo cliente
+        clientData.id = generateId();
+        clients.push(clientData);
+        showAlert('Cliente cadastrado com sucesso!');
       }
       
-      sale.status = newStatus;
-      save.sales();
-      loadBills();
-      updateDashboard();
-      alert('Status da conta atualizado!');
+      saveClients();
+      hideClientForm();
+      loadClientsTable();
     }
 
-    // RELATÓRIOS - CORRIGIDO
-    function loadReportFilters(){
-      // Carregar clientes
-      const clientSelect = byId('report-sales-client');
-      clientSelect.innerHTML = '<option value="">Todos os clientes</option>';
+    function editClient(clientId) {
+      showClientForm(clientId);
+    }
+
+    function deleteClient(clientId) {
+      if (confirm('Tem certeza que deseja excluir este cliente?')) {
+        clients = clients.filter(c => c.id !== clientId);
+        saveClients();
+        loadClientsTable();
+        showAlert('Cliente excluído com sucesso!');
+      }
+    }
+
+    function filterClients() {
+      // Implementação básica de filtro
+      loadClientsTable();
+    }
+
+    // ========== SERVIÇOS ==========
+    function loadServicesTable() {
+      const tbody = byId('services-table-body');
+      tbody.innerHTML = '';
+      
+      services.forEach(service => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${service.name}</td>
+          <td>${service.description}</td>
+          <td>${currency(service.price)}</td>
+          <td>${service.duration}</td>
+          <td><span class="status-badge ${service.status === 'active' ? 'status-concluido' : 'status-pendente'}">${service.status === 'active' ? 'Ativo' : 'Inativo'}</span></td>
+          <td>
+            <button class="btn btn-muted" onclick="editService(${service.id})"><i class="fa-solid fa-edit"></i></button>
+            <button class="btn btn-danger" onclick="deleteService(${service.id})"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function showServiceForm(serviceId = null) {
+      byId('service-form-container').style.display = 'block';
+      byId('service-form').reset();
+      
+      if (serviceId) {
+        byId('service-form-title').textContent = 'Editar Serviço';
+        const service = services.find(s => s.id === serviceId);
+        
+        if (service) {
+          byId('service-name').value = service.name;
+          byId('service-price').value = service.price;
+          byId('service-duration').value = service.duration;
+          byId('service-status').value = service.status;
+          byId('service-description').value = service.description || '';
+          
+          byId('service-form').dataset.editingId = serviceId;
+        }
+      } else {
+        byId('service-form-title').textContent = 'Novo Serviço';
+        delete byId('service-form').dataset.editingId;
+      }
+    }
+
+    function hideServiceForm() {
+      byId('service-form-container').style.display = 'none';
+    }
+
+    function saveService(event) {
+      event.preventDefault();
+      
+      const serviceData = {
+        name: byId('service-name').value,
+        price: parseFloat(byId('service-price').value),
+        duration: byId('service-duration').value,
+        status: byId('service-status').value,
+        description: byId('service-description').value,
+        createdAt: new Date().toISOString()
+      };
+      
+      const editingId = byId('service-form').dataset.editingId;
+      
+      if (editingId) {
+        // Editar serviço existente
+        const index = services.findIndex(s => s.id === parseInt(editingId));
+        if (index !== -1) {
+          services[index] = { ...services[index], ...serviceData };
+          showAlert('Serviço atualizado com sucesso!');
+        }
+      } else {
+        // Adicionar novo serviço
+        serviceData.id = generateId();
+        services.push(serviceData);
+        showAlert('Serviço cadastrado com sucesso!');
+      }
+      
+      saveServices();
+      hideServiceForm();
+      loadServicesTable();
+    }
+
+    function editService(serviceId) {
+      showServiceForm(serviceId);
+    }
+
+    function deleteService(serviceId) {
+      if (confirm('Tem certeza que deseja excluir este serviço?')) {
+        services = services.filter(s => s.id !== serviceId);
+        saveServices();
+        loadServicesTable();
+        showAlert('Serviço excluído com sucesso!');
+      }
+    }
+
+    // ========== NOVA VENDA ==========
+    function loadSaleForm() {
+      // Carregar clientes no select
+      const clientSelect = byId('sale-client');
+      clientSelect.innerHTML = '<option value="">Selecione um cliente</option>';
+      
       clients.forEach(client => {
         const option = document.createElement('option');
         option.value = client.id;
@@ -999,188 +1691,602 @@
         clientSelect.appendChild(option);
       });
       
-      // Carregar serviços
-      const serviceSelect = byId('report-sales-service');
-      serviceSelect.innerHTML = '<option value="">Todos os serviços</option>';
+      // Carregar serviços no select
+      const serviceSelect = byId('sale-service');
+      serviceSelect.innerHTML = '<option value="">Selecione um serviço</option>';
+      
       services.forEach(service => {
         const option = document.createElement('option');
         option.value = service.id;
-        option.textContent = service.name;
+        option.textContent = `${service.name} - ${currency(service.price)}`;
+        option.setAttribute('data-price', service.price);
         serviceSelect.appendChild(option);
       });
+      
+      // Definir data atual como padrão
+      byId('sale-date').valueAsDate = new Date();
     }
 
-    function generateSalesReport(){
-      const startDate = byId('report-sales-date-start').value;
-      const endDate = byId('report-sales-date-end').value;
-      const clientId = byId('report-sales-client').value;
-      const serviceId = byId('report-sales-service').value;
-      const status = byId('report-sales-status').value;
+    function updateSalePrice() {
+      const serviceId = parseInt(byId('sale-service').value);
+      const service = services.find(s => s.id === serviceId);
       
-      let filteredSales = sales;
+      if (service) {
+        byId('sale-price').value = service.price;
+      } else {
+        byId('sale-price').value = '';
+      }
+    }
+
+    function processSale(event) {
+      event.preventDefault();
       
-      // Aplicar filtros
-      if(startDate) filteredSales = filteredSales.filter(s => s.date >= startDate);
-      if(endDate) filteredSales = filteredSales.filter(s => s.date <= endDate);
-      if(clientId) filteredSales = filteredSales.filter(s => s.clientId === parseInt(clientId));
-      if(serviceId) filteredSales = filteredSales.filter(s => s.serviceId === parseInt(serviceId));
-      if(status) filteredSales = filteredSales.filter(s => s.status === status);
+      const saleData = {
+        clientId: parseInt(byId('sale-client').value),
+        serviceId: parseInt(byId('sale-service').value),
+        date: byId('sale-date').value,
+        price: parseFloat(byId('sale-price').value),
+        notes: byId('sale-notes').value,
+        status: byId('sale-status').value,
+        createdAt: new Date().toISOString()
+      };
       
-      // Atualizar tabela
-      const tbody = byId('sales-report-body');
+      saleData.id = generateId();
+      sales.push(saleData);
+      
+      saveSales();
+      showAlert('Venda processada com sucesso!');
+      byId('sale-form').reset();
+      loadSaleForm();
+      updateDashboard();
+    }
+
+    // ========== CONTAS A RECEBER ==========
+    function loadReceivablesTable() {
+      const tbody = byId('receivables-table-body');
       tbody.innerHTML = '';
       
-      filteredSales.forEach(sale => {
+      sales.filter(sale => sale.status === 'pending').forEach(sale => {
         const client = clients.find(c => c.id === sale.clientId);
         const service = services.find(s => s.id === sale.serviceId);
         
-        if(!client || !service) return;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${client ? client.name : 'Cliente não encontrado'}</td>
+          <td>${service ? service.name : 'Serviço não encontrado'}</td>
+          <td>${currency(sale.price)}</td>
+          <td>${formatDate(sale.date)}</td>
+          <td><span class="status-badge status-pendente">Pendente</span></td>
+          <td>
+            <button class="btn btn-success" onclick="markAsPaid(${sale.id})"><i class="fa-solid fa-check"></i> Receber</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function markAsPaid(saleId) {
+      const saleIndex = sales.findIndex(s => s.id === saleId);
+      if (saleIndex !== -1) {
+        sales[saleIndex].status = 'paid';
+        saveSales();
+        loadReceivablesTable();
+        showAlert('Pagamento recebido com sucesso!');
+        updateDashboard();
+      }
+    }
+
+    // ========== CONTAS A PAGAR ==========
+    function loadPayablesTable() {
+      const tbody = byId('payables-table-body');
+      tbody.innerHTML = '';
+      
+      payables.forEach(payable => {
+        const expenseType = expenseTypes.find(et => et.id === payable.expenseTypeId);
+        const dueDate = new Date(payable.dueDate);
+        const isOverdue = payable.status === 'pending' && dueDate < new Date();
+        
+        const statusClass = payable.status === 'paid' ? 'status-pago' : 
+                          isOverdue ? 'status-atrasado' : 'status-pendente';
+        const statusText = payable.status === 'paid' ? 'Pago' : 
+                         isOverdue ? 'Atrasado' : 'Pendente';
         
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${formatDate(sale.date)}</td>
-          <td>${client.name}</td>
-          <td>${sale.vehicle || 'Não informado'}</td>
-          <td>${sale.plate || 'Não informada'}</td>
-          <td>${service.name}</td>
-          <td>${currency(sale.total)}</td>
-          <td><span class="status-badge ${sale.status === 'Pago' ? 'status-pago' : 'status-pendente'}">${sale.status}</span></td>
-          <td>${sale.payment}</td>
+          <td>${payable.description}</td>
+          <td>${expenseType ? expenseType.name : 'Não definido'}</td>
+          <td>${payable.supplier || '-'}</td>
+          <td>${currency(payable.value)}</td>
+          <td>${formatDate(payable.dueDate)}</td>
+          <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+          <td>
+            ${payable.status === 'pending' ? `
+              <button class="btn btn-success" onclick="markPayableAsPaid(${payable.id})"><i class="fa-solid fa-check"></i> Pagar</button>
+            ` : ''}
+            <button class="btn btn-muted" onclick="editPayable(${payable.id})"><i class="fa-solid fa-edit"></i></button>
+            <button class="btn btn-danger" onclick="deletePayable(${payable.id})"><i class="fa-solid fa-trash"></i></button>
+          </td>
         `;
         tbody.appendChild(tr);
       });
       
-      // Atualizar resumo
-      updateReportSummary(filteredSales);
-      
-      // Atualizar gráfico
-      updateSalesReportChart(filteredSales);
+      // Atualizar select de filtro de tipos
+      updateExpenseTypeFilter();
     }
 
-    function updateReportSummary(salesData){
-      const totalSales = salesData.length;
-      const totalValue = salesData.reduce((sum, sale) => sum + sale.total, 0);
-      const pendingValue = salesData.filter(s => s.status === 'Pendente').reduce((sum, sale) => sum + sale.total, 0);
-      const receivedValue = salesData.filter(s => s.status === 'Pago').reduce((sum, sale) => sum + sale.total, 0);
-      const averageTicket = totalSales > 0 ? totalValue / totalSales : 0;
+    function showPayableForm(payableId = null) {
+      byId('payable-form-container').style.display = 'block';
+      byId('payable-form').reset();
       
-      byId('report-total-sales').textContent = totalSales;
-      byId('report-total-value').textContent = currency(totalValue);
-      byId('report-pending-value').textContent = currency(pendingValue);
-      byId('report-received-value').textContent = currency(receivedValue);
-      byId('report-average-ticket').textContent = currency(averageTicket);
-    }
-
-    function updateSalesReportChart(salesData){
-      const ctx = byId('salesReportChart').getContext('2d');
+      // Carregar tipos de despesa no select
+      const typeSelect = byId('payable-type');
+      typeSelect.innerHTML = '<option value="">Selecione um tipo</option>';
       
-      // Agrupar por mês
-      const monthlyData = {};
-      const statusData = { 'Pago': 0, 'Pendente': 0 };
-      
-      salesData.forEach(sale => {
-        const date = new Date(sale.date);
-        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-        
-        if(!monthlyData[monthKey]){
-          monthlyData[monthKey] = 0;
-        }
-        
-        monthlyData[monthKey] += sale.total;
-        statusData[sale.status] += sale.total;
+      expenseTypes.forEach(type => {
+        const option = document.createElement('option');
+        option.value = type.id;
+        option.textContent = type.name;
+        typeSelect.appendChild(option);
       });
       
-      const labels = Object.keys(monthlyData).sort();
-      const data = labels.map(label => monthlyData[label]);
+      // Definir data padrão (amanhã)
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      byId('payable-due-date').valueAsDate = tomorrow;
       
-      if(window.salesReportChart){
-        window.salesReportChart.destroy();
+      if (payableId) {
+        byId('payable-form-title').textContent = 'Editar Despesa';
+        const payable = payables.find(p => p.id === payableId);
+        
+        if (payable) {
+          byId('payable-description').value = payable.description;
+          byId('payable-type').value = payable.expenseTypeId;
+          byId('payable-supplier').value = payable.supplier || '';
+          byId('payable-value').value = payable.value;
+          byId('payable-due-date').value = payable.dueDate;
+          byId('payable-status').value = payable.status;
+          byId('payable-notes').value = payable.notes || '';
+          
+          byId('payable-form').dataset.editingId = payableId;
+        }
+      } else {
+        byId('payable-form-title').textContent = 'Nova Despesa';
+        delete byId('payable-form').dataset.editingId;
+      }
+    }
+
+    function hidePayableForm() {
+      byId('payable-form-container').style.display = 'none';
+    }
+
+    function savePayable(event) {
+      event.preventDefault();
+      
+      const payableData = {
+        description: byId('payable-description').value,
+        expenseTypeId: parseInt(byId('payable-type').value),
+        supplier: byId('payable-supplier').value,
+        value: parseFloat(byId('payable-value').value),
+        dueDate: byId('payable-due-date').value,
+        status: byId('payable-status').value,
+        notes: byId('payable-notes').value,
+        createdAt: new Date().toISOString()
+      };
+      
+      const editingId = byId('payable-form').dataset.editingId;
+      
+      if (editingId) {
+        // Editar despesa existente
+        const index = payables.findIndex(p => p.id === parseInt(editingId));
+        if (index !== -1) {
+          payables[index] = { ...payables[index], ...payableData };
+          showAlert('Despesa atualizada com sucesso!');
+        }
+      } else {
+        // Adicionar nova despesa
+        payableData.id = generateId();
+        payables.push(payableData);
+        showAlert('Despesa cadastrada com sucesso!');
       }
       
-      window.salesReportChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Vendas por Mês',
-            data: data,
-            backgroundColor: 'rgba(52, 152, 219, 0.6)',
-            borderColor: 'rgba(52, 152, 219, 1)',
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            y: {
-              beginAtZero: true
-            }
-          }
-        }
+      savePayables();
+      hidePayableForm();
+      loadPayablesTable();
+      updateDashboard();
+    }
+
+    function markPayableAsPaid(payableId) {
+      const payableIndex = payables.findIndex(p => p.id === payableId);
+      if (payableIndex !== -1) {
+        payables[payableIndex].status = 'paid';
+        payables[payableIndex].paidDate = new Date().toISOString();
+        savePayables();
+        loadPayablesTable();
+        showAlert('Despesa marcada como paga!');
+        updateDashboard();
+      }
+    }
+
+    function editPayable(payableId) {
+      showPayableForm(payableId);
+    }
+
+    function deletePayable(payableId) {
+      if (confirm('Tem certeza que deseja excluir esta despesa?')) {
+        payables = payables.filter(p => p.id !== payableId);
+        savePayables();
+        loadPayablesTable();
+        showAlert('Despesa excluída com sucesso!');
+        updateDashboard();
+      }
+    }
+
+    function filterPayables() {
+      // Implementação básica de filtro
+      loadPayablesTable();
+    }
+
+    function resetPayableFilters() {
+      byId('payable-type-filter').value = 'all';
+      byId('payable-status-filter').value = 'all';
+      byId('payable-period-filter').value = 'all';
+      loadPayablesTable();
+    }
+
+    function updateExpenseTypeFilter() {
+      const filterSelect = byId('payable-type-filter');
+      filterSelect.innerHTML = '<option value="all">Todos os Tipos</option>';
+      
+      expenseTypes.forEach(type => {
+        const option = document.createElement('option');
+        option.value = type.id;
+        option.textContent = type.name;
+        filterSelect.appendChild(option);
       });
     }
 
-    function exportToExcel(){
-      // Simulação de exportação para Excel
-      alert('Funcionalidade de exportação para Excel será implementada em breve!');
+    // ========== TIPOS DE DESPESA ==========
+    function showExpenseTypeForm() {
+      byId('expense-types-modal').style.display = 'block';
+      loadExpenseTypesTable();
     }
 
-    // Inicialização
-    function init(){
-      // Configurar datas padrão
-      byId('sale-date').value = todayISO();
-      byId('scheduling-date').value = todayISO();
-      byId('scheduling-time').value = '09:00';
+    function hideExpenseTypeForm() {
+      byId('expense-types-modal').style.display = 'none';
+    }
+
+    function loadExpenseTypesTable() {
+      const tbody = byId('expense-types-table-body');
+      tbody.innerHTML = '';
       
-      const today = new Date();
-      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-      byId('report-sales-date-start').value = firstDay.toISOString().split('T')[0];
-      byId('report-sales-date-end').value = todayISO();
+      expenseTypes.forEach(type => {
+        const typePayables = payables.filter(p => p.expenseTypeId === type.id);
+        const totalSpent = typePayables.reduce((sum, p) => sum + p.value, 0);
+        
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${type.name}</td>
+          <td>${currency(totalSpent)}</td>
+          <td>${typePayables.length} despesas</td>
+          <td>
+            <button class="btn btn-muted" onclick="editExpenseType(${type.id})"><i class="fa-solid fa-edit"></i></button>
+            <button class="btn btn-danger" onclick="deleteExpenseType(${type.id})"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function addExpenseType() {
+      const typeName = byId('new-expense-type').value.trim();
       
-      // Carregar dados iniciais
+      if (!typeName) {
+        showAlert('Por favor, digite um nome para o tipo de despesa.', 'error');
+        return;
+      }
+      
+      const newType = {
+        id: generateId(),
+        name: typeName,
+        description: '',
+        createdAt: new Date().toISOString()
+      };
+      
+      expenseTypes.push(newType);
+      saveExpenseTypes();
+      byId('new-expense-type').value = '';
+      loadExpenseTypesTable();
+      showAlert('Tipo de despesa adicionado com sucesso!');
+    }
+
+    function editExpenseType(typeId) {
+      const type = expenseTypes.find(t => t.id === typeId);
+      if (type) {
+        const newName = prompt('Editar nome do tipo de despesa:', type.name);
+        if (newName && newName.trim()) {
+          type.name = newName.trim();
+          saveExpenseTypes();
+          loadExpenseTypesTable();
+          showAlert('Tipo de despesa atualizado com sucesso!');
+        }
+      }
+    }
+
+    function deleteExpenseType(typeId) {
+      if (confirm('Tem certeza que deseja excluir este tipo de despesa? Isso não excluirá as despesas associadas.')) {
+        expenseTypes = expenseTypes.filter(t => t.id !== typeId);
+        saveExpenseTypes();
+        loadExpenseTypesTable();
+        showAlert('Tipo de despesa excluído com sucesso!');
+      }
+    }
+
+    // ========== AGENDAMENTOS ==========
+    function loadSchedulingsTable() {
+      const tbody = byId('schedulings-table-body');
+      tbody.innerHTML = '';
+      
+      schedulings.forEach(scheduling => {
+        const client = clients.find(c => c.id === scheduling.clientId);
+        const service = services.find(s => s.id === scheduling.serviceId);
+        
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${client ? client.name : 'Cliente não encontrado'}</td>
+          <td>${service ? service.name : 'Serviço não encontrado'}</td>
+          <td>${formatDate(scheduling.date)} ${scheduling.time}</td>
+          <td><span class="status-badge status-agendado">Agendado</span></td>
+          <td>
+            <button class="btn btn-muted" onclick="editScheduling(${scheduling.id})"><i class="fa-solid fa-edit"></i></button>
+            <button class="btn btn-danger" onclick="deleteScheduling(${scheduling.id})"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function showSchedulingForm() {
+      alert('Funcionalidade de agendamento em desenvolvimento...');
+    }
+
+    function editScheduling(schedulingId) {
+      alert('Editar agendamento - em desenvolvimento');
+    }
+
+    function deleteScheduling(schedulingId) {
+      if (confirm('Tem certeza que deseja excluir este agendamento?')) {
+        schedulings = schedulings.filter(s => s.id !== schedulingId);
+        saveSchedulings();
+        loadSchedulingsTable();
+        showAlert('Agendamento excluído com sucesso!');
+      }
+    }
+
+    // ========== RELATÓRIOS ==========
+    function generateReport() {
+      const reportType = byId('report-type').value;
+      const startDate = byId('report-start-date').value;
+      const endDate = byId('report-end-date').value;
+      
+      let reportData = [];
+      let reportTitle = '';
+      
+      // Filtrar por período se especificado
+      const dateFilter = (itemDate) => {
+        if (!startDate && !endDate) return true;
+        
+        const itemDateObj = new Date(itemDate);
+        const start = startDate ? new Date(startDate) : new Date(0);
+        const end = endDate ? new Date(endDate) : new Date();
+        
+        return itemDateObj >= start && itemDateObj <= end;
+      };
+      
+      switch (reportType) {
+        case 'payables':
+          reportTitle = 'Relatório de Contas a Pagar';
+          reportData = payables.filter(p => dateFilter(p.dueDate)).map(payable => {
+            const expenseType = expenseTypes.find(et => et.id === payable.expenseTypeId);
+            const dueDate = new Date(payable.dueDate);
+            const isOverdue = payable.status === 'pending' && dueDate < new Date();
+            
+            return {
+              date: payable.dueDate,
+              description: payable.description,
+              category: expenseType ? expenseType.name : 'Não definido',
+              value: payable.value,
+              status: payable.status === 'paid' ? 'Pago' : (isOverdue ? 'Atrasado' : 'Pendente')
+            };
+          });
+          break;
+          
+        case 'financial':
+          reportTitle = 'Relatório de Resultado Financeiro';
+          
+          // Receitas
+          const revenueData = sales.filter(s => dateFilter(s.date)).map(sale => {
+            const service = services.find(s => s.id === sale.serviceId);
+            const client = clients.find(c => c.id === sale.clientId);
+            
+            return {
+              date: sale.date,
+              description: `Venda - ${service ? service.name : 'Serviço'} - ${client ? client.name : 'Cliente'}`,
+              category: 'Receita',
+              value: service ? service.price : 0,
+              status: 'Realizado'
+            };
+          });
+          
+          // Despesas
+          const expensesData = payables.filter(p => dateFilter(p.dueDate)).map(payable => {
+            const expenseType = expenseTypes.find(et => et.id === payable.expenseTypeId);
+            
+            return {
+              date: payable.dueDate,
+              description: payable.description,
+              category: expenseType ? expenseType.name : 'Despesa',
+              value: -payable.value, // Valor negativo para despesas
+              status: payable.status === 'paid' ? 'Pago' : 'Pendente'
+            };
+          });
+          
+          reportData = [...revenueData, ...expensesData].sort((a, b) => new Date(a.date) - new Date(b.date));
+          break;
+          
+        default:
+          reportTitle = 'Relatório de Vendas';
+          reportData = sales.filter(s => dateFilter(s.date)).map(sale => {
+            const service = services.find(s => s.id === sale.serviceId);
+            const client = clients.find(c => c.id === sale.clientId);
+            
+            return {
+              date: sale.date,
+              description: `Venda - ${service ? service.name : 'Serviço'} - ${client ? client.name : 'Cliente'}`,
+              category: 'Venda',
+              value: service ? service.price : 0,
+              status: sale.status === 'paid' ? 'Pago' : 'Pendente'
+            };
+          });
+      }
+      
+      // Exibir resultados
+      byId('report-title').textContent = reportTitle;
+      const tbody = byId('report-table-body');
+      tbody.innerHTML = '';
+      
+      let total = 0;
+      
+      reportData.forEach(item => {
+        const tr = document.createElement('tr');
+        const value = item.value;
+        total += value;
+        
+        tr.innerHTML = `
+          <td>${formatDate(item.date)}</td>
+          <td>${item.description}</td>
+          <td>${item.category}</td>
+          <td style="color: ${value >= 0 ? '#28a745' : '#dc3545'}">${currency(Math.abs(value))} ${value >= 0 ? '' : '(Despesa)'}</td>
+          <td>${item.status}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+      
+      // Adicionar linha de total
+      if (reportData.length > 0) {
+        const totalRow = document.createElement('tr');
+        totalRow.style.fontWeight = 'bold';
+        totalRow.style.background = '#f8f9fa';
+        totalRow.innerHTML = `
+          <td colspan="3">TOTAL</td>
+          <td style="color: ${total >= 0 ? '#28a745' : '#dc3545'}">${currency(Math.abs(total))}</td>
+          <td>${total >= 0 ? 'Superávit' : 'Déficit'}</td>
+        `;
+        tbody.appendChild(totalRow);
+      }
+      
+      byId('report-results').style.display = 'block';
+    }
+
+    function printReport() {
+      window.print();
+    }
+
+    // ========== METAS ==========
+    function showGoalForm() {
+      alert('Funcionalidade de metas em desenvolvimento...');
+    }
+
+    // ========== PERSISTÊNCIA ==========
+    function saveClients() {
+      localStorage.setItem('clients', JSON.stringify(clients));
+    }
+
+    function saveServices() {
+      localStorage.setItem('services', JSON.stringify(services));
+    }
+
+    function saveSales() {
+      localStorage.setItem('sales', JSON.stringify(sales));
+    }
+
+    function saveSchedulings() {
+      localStorage.setItem('schedulings', JSON.stringify(schedulings));
+    }
+
+    function saveGoals() {
+      localStorage.setItem('goals', JSON.stringify(goals));
+    }
+
+    function saveExpenseTypes() {
+      localStorage.setItem('expenseTypes', JSON.stringify(expenseTypes));
+    }
+
+    function savePayables() {
+      localStorage.setItem('payables', JSON.stringify(payables));
+    }
+
+    // ========== INICIALIZAÇÃO ==========
+    function init() {
+      // Carregar dados do localStorage
+      if (localStorage.getItem('clients')) {
+        clients = JSON.parse(localStorage.getItem('clients'));
+      }
+      
+      if (localStorage.getItem('services')) {
+        services = JSON.parse(localStorage.getItem('services'));
+      }
+      
+      if (localStorage.getItem('sales')) {
+        sales = JSON.parse(localStorage.getItem('sales'));
+      }
+      
+      if (localStorage.getItem('schedulings')) {
+        schedulings = JSON.parse(localStorage.getItem('schedulings'));
+      }
+      
+      if (localStorage.getItem('goals')) {
+        goals = JSON.parse(localStorage.getItem('goals'));
+      }
+      
+      if (localStorage.getItem('expenseTypes')) {
+        expenseTypes = JSON.parse(localStorage.getItem('expenseTypes'));
+      }
+      
+      if (localStorage.getItem('payables')) {
+        payables = JSON.parse(localStorage.getItem('payables'));
+      }
+      
+      // Adicionar alguns dados de exemplo se estiver vazio
+      if (clients.length === 0) {
+        clients = [
+          { id: 1, name: "João Silva", email: "joao@email.com", phone: "(11) 99999-9999", status: "active", createdAt: new Date().toISOString() },
+          { id: 2, name: "Maria Santos", email: "maria@email.com", phone: "(11) 88888-8888", status: "active", createdAt: new Date().toISOString() }
+        ];
+        saveClients();
+      }
+      
+      if (sales.length === 0) {
+        sales = [
+          { id: 1, clientId: 1, serviceId: 1, date: new Date().toISOString(), price: 150.00, status: "paid", createdAt: new Date().toISOString() },
+          { id: 2, clientId: 2, serviceId: 2, date: new Date().toISOString(), price: 80.00, status: "pending", createdAt: new Date().toISOString() }
+        ];
+        saveSales();
+      }
+      
+      if (payables.length === 0) {
+        payables = [
+          { id: 1, description: "Aluguel do mês", expenseTypeId: 1, supplier: "Imobiliária XYZ", value: 1200.00, dueDate: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 5).toISOString().split('T')[0], status: "pending", createdAt: new Date().toISOString() },
+          { id: 2, description: "Material de escritório", expenseTypeId: 2, supplier: "Papelaria ABC", value: 150.00, dueDate: new Date(new Date().getFullYear(), new Date().getMonth(), 15).toISOString().split('T')[0], status: "paid", createdAt: new Date().toISOString() }
+        ];
+        savePayables();
+      }
+      
+      // Inicializar dashboard
       updateDashboard();
-      loadClients();
-      loadServices();
-      loadCategories();
-      loadUsers();
-      loadBills();
-      loadReportFilters();
-      loadSchedulingFormOptions();
-      loadSchedulingCalendar();
-      loadSchedulingList();
-      
-      // Configurar usuário atual
-      byId('user-name').textContent = currentUser.name;
-      byId('user-avatar').textContent = currentUser.name.charAt(0);
-      fillProfile();
     }
 
-    // Iniciar aplicação
+    // Inicializar quando a página carregar
     window.onload = init;
-
-    // Funções globais
-    window.showSection = showSection;
-    window.addClient = addClient;
-    window.editClient = editClient;
-    window.deleteClient = deleteClient;
-    window.searchClients = searchClients;
-    window.addService = addService;
-    window.editService = editService;
-    window.deleteService = deleteService;
-    window.searchServices = searchServices;
-    window.completeSale = completeSale;
-    window.clearSaleForm = clearSaleForm;
-    window.receiveBill = receiveBill;
-    window.editBill = editBill;
-    window.searchBills = searchBills;
-    window.clearBillSearch = clearBillSearch;
-    window.toggleSelectAllBills = toggleSelectAllBills;
-    window.selectAllBills = selectAllBills;
-    window.deselectAllBills = deselectAllBills;
-    window.receiveSelectedBills = receiveSelectedBills;
-    window.generateSalesReport = generateSalesReport;
-    window.exportToExcel = exportToExcel;
-    window.sair = sair;
   </script>
 </body>
 </html>
