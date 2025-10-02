@@ -123,6 +123,7 @@
     .status-agendado { background:linear-gradient(135deg, #cce7ff, #b3d9ff); color:#004085; }
     .status-concluido { background:linear-gradient(135deg, #d1ecf1, #b8e0e6); color:#0c5460; }
     .status-atrasado { background:linear-gradient(135deg, #f8d7da, #f5c6cb); color:#721c24; }
+    .status-nao-pago { background:linear-gradient(135deg, #f8d7da, #f5c6cb); color:#721c24; }
     
     /* Goals Section */
     .goals-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:24px; }
@@ -361,6 +362,14 @@
               <div style="height:300px"><canvas id="servicesChart"></canvas></div>
             </div>
           </div>
+
+          <!-- Novo Gráfico de Lucro -->
+          <div class="chart-container">
+            <div class="chart-header">
+              <div class="chart-title">Lucro por Serviço</div>
+            </div>
+            <div style="height:300px"><canvas id="profitChart"></canvas></div>
+          </div>
         </section>
 
         <!-- CLIENTES -->
@@ -494,6 +503,7 @@
                     <th>Nome</th>
                     <th>Preço</th>
                     <th>Custo</th>
+                    <th>Lucro</th>
                     <th>Duração</th>
                     <th>Categoria</th>
                     <th>Ações</th>
@@ -544,6 +554,7 @@
                     <option value="cartao_credito">Cartão de Crédito</option>
                     <option value="cartao_debito">Cartão de Débito</option>
                     <option value="pix">PIX</option>
+                    <option value="nao_pago">Não Pago</option>
                   </select>
                 </div>
               </div>
@@ -554,6 +565,7 @@
                   <select id="sale-status">
                     <option value="Pago">Pago</option>
                     <option value="Pendente" selected>Pendente</option>
+                    <option value="Não Pago">Não Pago</option>
                   </select>
                 </div>
                 <div class="form-group">
@@ -664,6 +676,7 @@
                     <option value="">Todos os status</option>
                     <option value="Pago">Pago</option>
                     <option value="Pendente">Pendente</option>
+                    <option value="Não Pago">Não Pago</option>
                   </select>
                 </div>
                 <div class="form-group">
@@ -1019,6 +1032,7 @@
                 <div class="tab active" onclick="showEmployeeTab('dados-pessoais', this)">Dados Pessoais</div>
                 <div class="tab" onclick="showEmployeeTab('dados-profissionais', this)">Dados Profissionais</div>
                 <div class="tab" onclick="showEmployeeTab('beneficios', this)">Benefícios</div>
+                <div class="tab" onclick="showEmployeeTab('folha-pagamento', this)">Folha de Pagamento</div>
               </div>
               
               <!-- Dados Pessoais -->
@@ -1105,8 +1119,8 @@
                 
                 <div class="row">
                   <div class="form-group">
-                    <label class="form-label">Salário Base (R$) *</label>
-                    <input type="number" id="employee-base-salary" step="0.01" required>
+                    <label class="form-label">Data de Saída</label>
+                    <input type="date" id="employee-exit-date">
                   </div>
                   <div class="form-group">
                     <label class="form-label">Tipo de Contrato</label>
@@ -1169,6 +1183,44 @@
                   <textarea id="employee-notes" rows="3"></textarea>
                 </div>
               </div>
+
+              <!-- Folha de Pagamento -->
+              <div id="folha-pagamento" class="config-tab">
+                <div class="row">
+                  <div class="form-group">
+                    <label class="form-label">Salário Base (R$) *</label>
+                    <input type="number" id="employee-base-salary" step="0.01" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Dias de Férias</label>
+                    <input type="number" id="employee-vacation-days" value="30">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">13º Salário</label>
+                    <select id="employee-thirteenth-salary">
+                      <option value="sim">Sim</option>
+                      <option value="nao">Não</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">Observações Folha</label>
+                  <textarea id="employee-payroll-notes" rows="3" placeholder="Observações sobre folha de pagamento"></textarea>
+                </div>
+
+                <div class="quick-actions">
+                  <button type="button" class="btn btn-warning" onclick="showAdvancePanel(currentEmployeeId)">
+                    <i class="fa-solid fa-hand-holding-usd"></i> Adiantamentos
+                  </button>
+                  <button type="button" class="btn btn-info" onclick="showVacationPanel(currentEmployeeId)">
+                    <i class="fa-solid fa-umbrella-beach"></i> Férias
+                  </button>
+                  <button type="button" class="btn btn-danger" onclick="showRescisionPanel(currentEmployeeId)">
+                    <i class="fa-solid fa-file-contract"></i> Rescisão
+                  </button>
+                </div>
+              </div>
               
               <button type="submit" class="btn btn-success">
                 <i class="fa-solid fa-save"></i> Salvar Funcionário
@@ -1215,6 +1267,7 @@
                     <option value="">Todos os status</option>
                     <option value="Pago">Pago</option>
                     <option value="Pendente">Pendente</option>
+                    <option value="Não Pago">Não Pago</option>
                   </select>
                 </div>
                 <div class="form-group">
@@ -1246,6 +1299,8 @@
                     <th>Placa</th>
                     <th>Serviço</th>
                     <th>Valor</th>
+                    <th>Custo</th>
+                    <th>Lucro</th>
                     <th>Status</th>
                     <th>Pagamento</th>
                   </tr>
@@ -1264,6 +1319,14 @@
                 <div class="form-group">
                   <label class="form-label">Valor Total</label>
                   <div id="report-total-value">R$ 0,00</div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Custo Total</label>
+                  <div id="report-total-cost">R$ 0,00</div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Lucro Total</label>
+                  <div id="report-total-profit">R$ 0,00</div>
                 </div>
                 <div class="form-group">
                   <label class="form-label">Valor Pendente</label>
@@ -1336,7 +1399,6 @@
 
   <script>
     // ========== VARIÁVEIS GLOBAIS ==========
-    // Dados em memória - funciona localmente
     let clients = [];
     let services = [];
     let categories = [];
@@ -1351,6 +1413,7 @@
     let lastSaleId = null;
     let cashFlowChart = null;
     let servicesChart = null;
+    let profitChart = null;
     let currentEmployeeId = null;
 
     // ========== FUNÇÕES UTILITÁRIAS ==========
@@ -1397,15 +1460,12 @@
 
     // ========== NAVEGAÇÃO E INTERFACE ==========
     function showSection(sectionId, element = null) {
-      // Esconder todas as seções
       document.querySelectorAll('.section').forEach(section => {
         section.classList.remove('active');
       });
       
-      // Mostrar a seção selecionada
       byId(sectionId).classList.add('active');
       
-      // Atualizar título da página
       const titles = {
         dashboard: 'Dashboard',
         clientes: 'Clientes',
@@ -1423,7 +1483,6 @@
       
       byId('page-title').textContent = titles[sectionId] || 'Flex Vistorias';
       
-      // Atualizar menu ativo
       if (element) {
         document.querySelectorAll('.menu li').forEach(li => {
           li.classList.remove('active');
@@ -1431,7 +1490,6 @@
         element.classList.add('active');
       }
       
-      // Atualizar dados da seção
       if (sectionId === 'dashboard') {
         updateDashboard();
       } else if (sectionId === 'clientes') {
@@ -1479,6 +1537,7 @@
       },0);
       
       const pendingBills = sales.filter(s=>s.status!=='Pago').length;
+      const pendingAmount = sales.filter(s=>s.status!=='Pago').reduce((t,s)=>t+s.total,0);
       const todaySchedulings = schedulings.filter(s=>{
         const d = new Date(s.date);
         const t = new Date();
@@ -1488,12 +1547,33 @@
       byId('sales-value').textContent = currency(totalSales);
       byId('sales-footer').textContent = `${sales.length} vendas`;
       byId('pending-value').textContent = pendingBills;
+      byId('pending-amount').textContent = currency(pendingAmount);
       byId('clients-value').textContent = clients.length;
       byId('services-value').textContent = services.length;
       byId('scheduling-value').textContent = todaySchedulings;
 
+      updateProgressBars(totalSales, pendingBills);
       updateSalesChart();
       updateServicesChart();
+      updateProfitChart();
+    }
+
+    function updateProgressBars(totalSales, pendingBills) {
+      const revenueGoal = 50000;
+      const revenueProgress = Math.min((totalSales / revenueGoal) * 100, 100);
+      byId('revenue-progress').style.width = `${revenueProgress}%`;
+      
+      const pendingGoal = 20;
+      const pendingProgress = Math.min((pendingBills / pendingGoal) * 100, 100);
+      byId('pending-progress').style.width = `${pendingProgress}%`;
+      
+      const clientsGoal = 100;
+      const clientsProgress = Math.min((clients.length / clientsGoal) * 100, 100);
+      byId('clients-progress').style.width = `${clientsProgress}%`;
+      
+      const servicesGoal = 20;
+      const servicesProgress = Math.min((services.length / servicesGoal) * 100, 100);
+      byId('services-progress').style.width = `${servicesProgress}%`;
     }
 
     function updateSalesChart() {
@@ -1566,6 +1646,50 @@
       });
     }
 
+    function updateProfitChart() {
+      const ctx = byId('profitChart');
+      if (!ctx) return;
+      
+      const serviceProfits = {};
+      
+      sales.forEach(sale => {
+        const service = services.find(s => s.id === sale.serviceId);
+        if (service) {
+          const profit = service.price - service.cost;
+          serviceProfits[service.name] = (serviceProfits[service.name] || 0) + profit;
+        }
+      });
+
+      const labels = Object.keys(serviceProfits);
+      const data = Object.values(serviceProfits);
+
+      if (profitChart) {
+        profitChart.destroy();
+      }
+      
+      profitChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Lucro por Serviço',
+            data: data,
+            backgroundColor: 'rgba(40, 167, 69, 0.6)',
+            borderColor: 'rgba(40, 167, 69, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+
     // ========== CLIENTES ==========
     function addClient(){
       const name = byId('client-name').value.trim();
@@ -1588,7 +1712,6 @@
       
       clients.push(newClient);
       
-      // Limpar campos
       byId('client-name').value = '';
       byId('client-email').value = '';
       byId('client-phone').value = '';
@@ -1665,7 +1788,6 @@
         byId('client-document').value = client.document || '';
         byId('client-inspection-type').value = client.inspectionType || '';
         
-        // Remover o cliente da lista para depois adicionar atualizado
         clients = clients.filter(c => c.id !== clientId);
         showAlert('Preencha os dados e clique em Adicionar para atualizar o cliente');
       }
@@ -1718,7 +1840,6 @@
       
       services.push(newService);
       
-      // Limpar campos
       byId('service-code').value = '';
       byId('service-name').value = '';
       byId('service-price').value = '';
@@ -1737,12 +1858,14 @@
       
       services.forEach(service => {
         const category = categories.find(c => c.id === service.categoryId);
+        const profit = service.price - service.cost;
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${service.code || '-'}</td>
           <td>${service.name}</td>
           <td>${currency(service.price)}</td>
           <td>${currency(service.cost)}</td>
+          <td style="color: ${profit >= 0 ? '#28a745' : '#dc3545'}; font-weight: 600;">${currency(profit)}</td>
           <td>${service.duration ? service.duration + 'min' : '-'}</td>
           <td>${category ? category.name : 'Sem categoria'}</td>
           <td>
@@ -1772,12 +1895,14 @@
       
       filtered.forEach(service => {
         const category = categories.find(c => c.id === service.categoryId);
+        const profit = service.price - service.cost;
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${service.code || '-'}</td>
           <td>${service.name}</td>
           <td>${currency(service.price)}</td>
           <td>${currency(service.cost)}</td>
+          <td style="color: ${profit >= 0 ? '#28a745' : '#dc3545'}; font-weight: 600;">${currency(profit)}</td>
           <td>${service.duration ? service.duration + 'min' : '-'}</td>
           <td>${category ? category.name : 'Sem categoria'}</td>
           <td>
@@ -1799,7 +1924,6 @@
         byId('service-duration').value = service.duration || '';
         byId('service-category').value = service.categoryId || '';
         
-        // Remover o serviço da lista para depois adicionar atualizado
         services = services.filter(s => s.id !== serviceId);
         showAlert('Preencha os dados e clique em Adicionar para atualizar o serviço');
       }
@@ -1846,14 +1970,13 @@
       byId('sale-plate').value = '';
       byId('sale-date').value = todayISO();
       byId('sale-payment').selectedIndex = 0;
-      byId('sale-status').selectedIndex = 1; // Pendente
+      byId('sale-status').selectedIndex = 1;
       byId('sale-discount').value = '';
       byId('sale-notes').value = '';
       lastSaleId = null;
     }
 
     function completeSale(){
-      // Prevenir duplicação de vendas
       const currentTimestamp = Date.now();
       if(lastSaleId && (currentTimestamp - lastSaleId) < 3000) {
         return alert('Aguarde alguns segundos antes de fazer outra venda!');
@@ -1869,7 +1992,6 @@
       const discount = parseFloat(byId('sale-discount').value) || 0;
       const notes = byId('sale-notes').value.trim();
       
-      // Validações reforçadas
       if(!clientId || !serviceId) {
         return alert('Selecione um cliente e um serviço');
       }
@@ -1901,7 +2023,6 @@
       sales.push(newSale);
       lastSaleId = currentTimestamp;
       
-      // Mostrar resumo
       const client = clients.find(c => c.id === clientId);
       byId('summary-client').textContent = client.name;
       byId('summary-service').textContent = `${service.name} - ${currency(service.price)}`;
@@ -1914,7 +2035,6 @@
       byId('summary-notes').textContent = notes || 'Nenhuma';
       byId('sale-summary').style.display = 'block';
       
-      // Limpar campos automaticamente para nova venda
       clearSaleForm();
       
       updateDashboard();
@@ -1932,6 +2052,9 @@
         
         if(!client || !service) return;
         
+        const statusClass = sale.status === 'Pago' ? 'status-pago' : 
+                          sale.status === 'Não Pago' ? 'status-nao-pago' : 'status-pendente';
+        
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td><input type="checkbox" class="bill-checkbox" value="${sale.id}"></td>
@@ -1942,7 +2065,7 @@
           <td>${service.name}</td>
           <td>${formatDate(sale.date)}</td>
           <td>${currency(sale.total)}</td>
-          <td><span class="status-badge ${sale.status === 'Pago' ? 'status-pago' : 'status-pendente'}">${sale.status}</span></td>
+          <td><span class="status-badge ${statusClass}">${sale.status}</span></td>
           <td>
             <button class="btn btn-success" onclick="receiveBill(${sale.id})" ${sale.status === 'Pago' ? 'disabled' : ''}>Receber</button>
             <button class="btn btn-muted" onclick="editBill(${sale.id})">Editar</button>
@@ -1972,7 +2095,6 @@
         return matchesClient && matchesVehicle && matchesPlate && matchesDateStart && matchesDateEnd && matchesStatus;
       });
       
-      // Recarregar tabela com resultados filtrados
       const tbody = byId('bills-table-body');
       tbody.innerHTML = '';
       
@@ -1981,6 +2103,9 @@
         const service = services.find(s => s.id === sale.serviceId);
         
         if(!client || !service) return;
+        
+        const statusClass = sale.status === 'Pago' ? 'status-pago' : 
+                          sale.status === 'Não Pago' ? 'status-nao-pago' : 'status-pendente';
         
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -1992,7 +2117,7 @@
           <td>${service.name}</td>
           <td>${formatDate(sale.date)}</td>
           <td>${currency(sale.total)}</td>
-          <td><span class="status-badge ${sale.status === 'Pago' ? 'status-pago' : 'status-pendente'}">${sale.status}</span></td>
+          <td><span class="status-badge ${statusClass}">${sale.status}</span></td>
           <td>
             <button class="btn btn-success" onclick="receiveBill(${sale.id})" ${sale.status === 'Pago' ? 'disabled' : ''}>Receber</button>
             <button class="btn btn-muted" onclick="editBill(${sale.id})">Editar</button>
@@ -2070,17 +2195,92 @@
       const sale = sales.find(s => s.id === id);
       if(!sale) return;
       
-      const newStatus = prompt('Novo status (Pago/Pendente):', sale.status);
-      if(newStatus === null) return;
+      const editPanel = document.createElement('div');
+      editPanel.className = 'panel';
+      editPanel.innerHTML = `
+        <div class="panel-header">
+          <h3>Editar Venda #${sale.id}</h3>
+          <button class="btn btn-muted" onclick="this.parentElement.parentElement.remove()">
+            <i class="fa-solid fa-times"></i> Fechar
+          </button>
+        </div>
+        
+        <div class="filters">
+          <div class="filter-row">
+            <div class="form-group">
+              <label class="form-label">Cliente</label>
+              <select id="edit-sale-client">
+                ${clients.map(client => 
+                  `<option value="${client.id}" ${client.id === sale.clientId ? 'selected' : ''}>${client.name}</option>`
+                ).join('')}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Serviço</label>
+              <select id="edit-sale-service">
+                ${services.map(service => 
+                  `<option value="${service.id}" ${service.id === sale.serviceId ? 'selected' : ''}>${service.name} - ${currency(service.price)}</option>`
+                ).join('')}
+              </select>
+            </div>
+          </div>
+          
+          <div class="filter-row">
+            <div class="form-group">
+              <label class="form-label">Veículo</label>
+              <input type="text" id="edit-sale-vehicle" value="${sale.vehicle}">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Placa</label>
+              <input type="text" id="edit-sale-plate" value="${sale.plate}">
+            </div>
+          </div>
+          
+          <div class="filter-row">
+            <div class="form-group">
+              <label class="form-label">Valor</label>
+              <input type="number" id="edit-sale-value" step="0.01" value="${sale.total}">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Status</label>
+              <select id="edit-sale-status">
+                <option value="Pago" ${sale.status === 'Pago' ? 'selected' : ''}>Pago</option>
+                <option value="Pendente" ${sale.status === 'Pendente' ? 'selected' : ''}>Pendente</option>
+                <option value="Não Pago" ${sale.status === 'Não Pago' ? 'selected' : ''}>Não Pago</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="filter-row">
+            <div class="form-group">
+              <button class="btn btn-success" onclick="updateSale(${sale.id})">
+                <i class="fa-solid fa-save"></i> Atualizar Venda
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
       
-      if(newStatus !== 'Pago' && newStatus !== 'Pendente') {
-        return alert('Status deve ser "Pago" ou "Pendente"');
-      }
+      document.querySelector('.content .container').appendChild(editPanel);
+    }
+
+    function updateSale(saleId) {
+      const sale = sales.find(s => s.id === saleId);
+      if (!sale) return;
       
-      sale.status = newStatus;
+      sale.clientId = parseInt(byId('edit-sale-client').value);
+      sale.serviceId = parseInt(byId('edit-sale-service').value);
+      sale.vehicle = byId('edit-sale-vehicle').value;
+      sale.plate = byId('edit-sale-plate').value;
+      sale.total = parseFloat(byId('edit-sale-value').value);
+      sale.status = byId('edit-sale-status').value;
+      
       loadBills();
       updateDashboard();
-      showAlert('Status da conta atualizado!');
+      showAlert('Venda atualizada com sucesso!');
+      
+      // Remover o painel de edição
+      document.querySelector('.panel:last-child').remove();
     }
 
     // ========== CONTAS A PAGAR ==========
@@ -2088,7 +2288,6 @@
       byId('payable-form-container').style.display = 'block';
       byId('payable-form').reset();
       
-      // Definir data padrão (amanhã)
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
       byId('payable-due-date').valueAsDate = tomorrow;
@@ -2170,7 +2369,6 @@
         byId('payable-due-date').value = payable.dueDate;
         byId('payable-notes').value = payable.notes || '';
         
-        // Remover a despesa da lista para depois adicionar atualizada
         payables = payables.filter(p => p.id !== payableId);
         showPayableForm();
         showAlert('Preencha os dados e clique em Salvar para atualizar a despesa');
@@ -2231,7 +2429,6 @@
       
       schedulings.push(newScheduling);
       
-      // Limpar campos
       byId('scheduling-client').selectedIndex = 0;
       byId('scheduling-service').selectedIndex = 0;
       byId('scheduling-date').value = '';
@@ -2315,7 +2512,6 @@
         byId('scheduling-time').value = scheduling.time;
         byId('scheduling-notes').value = scheduling.notes || '';
         
-        // Remover o agendamento da lista para depois adicionar atualizado
         schedulings = schedulings.filter(s => s.id !== schedulingId);
         showAlert('Preencha os dados e clique em Agendar para atualizar o agendamento');
       }
@@ -2349,7 +2545,6 @@
       const calendarDays = byId('calendar-days');
       calendarDays.innerHTML = '';
       
-      // Dias do mês anterior
       for (let i = 0; i < startingDay; i++) {
         const day = document.createElement('div');
         day.className = 'day other';
@@ -2357,13 +2552,11 @@
         calendarDays.appendChild(day);
       }
       
-      // Dias do mês atual
       for (let i = 1; i <= daysInMonth; i++) {
         const day = document.createElement('div');
         day.className = 'day';
         day.textContent = i;
         
-        // Verificar se há agendamentos neste dia
         const dayDate = new Date(currentYear, currentMonth, i);
         const dayISO = dayDate.toISOString().split('T')[0];
         const hasEvent = schedulings.some(s => s.date === dayISO);
@@ -2372,7 +2565,6 @@
           day.classList.add('has-event');
         }
         
-        // Destacar dia atual
         const today = new Date();
         if (dayDate.toDateString() === today.toDateString()) {
           day.classList.add('today');
@@ -2416,7 +2608,6 @@
       
       categories.push(newCategory);
       
-      // Limpar campos
       byId('category-name').value = '';
       byId('category-description').value = '';
       
@@ -2448,7 +2639,6 @@
         byId('category-name').value = category.name;
         byId('category-description').value = category.description || '';
         
-        // Remover a categoria da lista para depois adicionar atualizada
         categories = categories.filter(c => c.id !== categoryId);
         showAlert('Preencha os dados e clique em Adicionar para atualizar a categoria');
       }
@@ -2484,7 +2674,6 @@
       
       users.push(newUser);
       
-      // Limpar campos
       byId('user-name-input').value = '';
       byId('user-email').value = '';
       byId('user-password').value = '';
@@ -2521,7 +2710,6 @@
         byId('user-password').value = user.password;
         byId('user-role').value = user.role;
         
-        // Remover o usuário da lista para depois adicionar atualizado
         users = users.filter(u => u.id !== userId);
         showAlert('Preencha os dados e clique em Adicionar para atualizar o usuário');
       }
@@ -2541,10 +2729,8 @@
       byId('employee-form').reset();
       byId('employee-form-title').textContent = 'Novo Funcionário';
       
-      // Definir data padrão (hoje)
       byId('employee-hire-date').valueAsDate = new Date();
       
-      // Resetar tabs
       showEmployeeTab('dados-pessoais', document.querySelector('.tab.active'));
     }
 
@@ -2554,15 +2740,12 @@
     }
 
     function showEmployeeTab(tabId, element) {
-      // Esconder todas as tabs
       document.querySelectorAll('.config-tab').forEach(tab => {
         tab.classList.remove('active');
       });
       
-      // Mostrar a tab selecionada
       byId(tabId).classList.add('active');
       
-      // Atualizar tabs ativas
       document.querySelectorAll('.tab').forEach(tab => {
         tab.classList.remove('active');
       });
@@ -2573,7 +2756,6 @@
     function saveEmployee(event) {
       event.preventDefault();
       
-      // Dados Pessoais
       const personalData = {
         name: byId('employee-name').value,
         cpf: byId('employee-cpf').value,
@@ -2586,18 +2768,17 @@
         address: byId('employee-address').value
       };
       
-      // Dados Profissionais
       const professionalData = {
         position: byId('employee-position').value,
         department: byId('employee-department').value,
         hireDate: byId('employee-hire-date').value,
+        exitDate: byId('employee-exit-date').value || null,
         baseSalary: parseFloat(byId('employee-base-salary').value),
         contractType: byId('employee-contract-type').value,
         workHours: parseInt(byId('employee-work-hours').value) || 44,
         status: byId('employee-status').value
       };
       
-      // Benefícios
       const benefits = {
         transportAllowance: parseFloat(byId('employee-transport-allowance').value) || 0,
         mealAllowance: parseFloat(byId('employee-meal-allowance').value) || 0,
@@ -2607,7 +2788,12 @@
         notes: byId('employee-notes').value
       };
       
-      // Calcular salário total
+      const payrollData = {
+        vacationDays: parseInt(byId('employee-vacation-days').value) || 30,
+        thirteenthSalary: byId('employee-thirteenth-salary').value,
+        payrollNotes: byId('employee-payroll-notes').value
+      };
+      
       const totalSalary = professionalData.baseSalary + 
                          benefits.transportAllowance + 
                          benefits.mealAllowance + 
@@ -2619,23 +2805,24 @@
         ...personalData,
         ...professionalData,
         ...benefits,
+        ...payrollData,
         totalSalary,
         advances: [],
         vacations: [],
+        rescissions: [],
         createdAt: new Date().toISOString()
       };
       
       if (currentEmployeeId) {
-        // Atualizar funcionário existente
         const index = employees.findIndex(e => e.id === currentEmployeeId);
         if (index !== -1) {
           employeeData.id = currentEmployeeId;
           employeeData.advances = employees[index].advances || [];
           employeeData.vacations = employees[index].vacations || [];
+          employeeData.rescissions = employees[index].rescissions || [];
           employees[index] = employeeData;
         }
       } else {
-        // Novo funcionário
         employeeData.id = generateId();
         employees.push(employeeData);
       }
@@ -2650,20 +2837,170 @@
       container.innerHTML = '';
       
       employees.forEach(employee => {
-        // Calcular dias de férias disponíveis
         const hireDate = new Date(employee.hireDate);
         const today = new Date();
         const monthsWorked = (today.getFullYear() - hireDate.getFullYear()) * 12 + 
                             (today.getMonth() - hireDate.getMonth());
         const vacationDaysEarned = Math.floor(monthsWorked / 12) * 30;
         
-        // Calcular dias de férias já usados
         const vacationDaysUsed = employee.vacations ? 
           employee.vacations.reduce((total, vacation) => total + vacation.days, 0) : 0;
         
         const vacationDaysAvailable = vacationDaysEarned - vacationDaysUsed;
         
-        // Calcular total de adiantamentos pendentes
+        const pendingAdvances = employee.advances ? 
+          employee.advances.filter(a => a.status === 'Pendente')
+                         .reduce((total, advance) => total + advance.amount, 0) : 0;
+        
+        const employeeCard = document.createElement('div');
+        employeeCard.className = 'employee-card';
+        employeeCard.innerHTML = `
+          <div class="employee-header">
+            <div class="employee-info">
+              <div class="employee-avatar">${employee.name.charAt(0)}</div>
+              <div class="employee-details">
+                <h4>${employee.name}</h4>
+                <p>${employee.position} - ${employee.department}</p>
+                <p>Admitido em: ${formatDate(employee.hireDate)}</p>
+                ${employee.exitDate ? `<p>Saída: ${formatDate(employee.exitDate)}</p>` : ''}
+              </div>
+            </div>
+            <div>
+              <span class="status-badge ${employee.status === 'Ativo' ? 'status-pago' : 
+                                         employee.status === 'Férias' ? 'status-agendado' : 
+                                         employee.status === 'Afastado' ? 'status-pendente' : 
+                                         'status-atrasado'}">${employee.status}</span>
+            </div>
+          </div>
+          
+          <div class="employee-stats">
+            <div class="stat-item">
+              <div class="stat-value">${currency(employee.totalSalary)}</div>
+              <div class="stat-label">Salário Total</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">${vacationDaysAvailable}</div>
+              <div class="stat-label">Dias de Férias</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">${currency(pendingAdvances)}</div>
+              <div class="stat-label">Adiantamentos</div>
+            </div>
+          </div>
+          
+          <div class="salary-breakdown">
+            <div class="breakdown-item">
+              <span class="breakdown-label">Salário Base:</span>
+              <span class="breakdown-value">${currency(employee.baseSalary)}</span>
+            </div>
+            <div class="breakdown-item">
+              <span class="breakdown-label">Benefícios:</span>
+              <span class="breakdown-value">${currency(employee.totalSalary - employee.baseSalary)}</span>
+            </div>
+          </div>
+          
+          <div class="quick-actions" style="margin-top:15px;">
+            <button class="btn btn-primary" onclick="editEmployee(${employee.id})">
+              <i class="fa-solid fa-edit"></i> Editar
+            </button>
+            <button class="btn btn-warning" onclick="showAdvancePanel(${employee.id})">
+              <i class="fa-solid fa-hand-holding-usd"></i> Adiantamentos
+            </button>
+            <button class="btn btn-info" onclick="showVacationPanel(${employee.id})">
+              <i class="fa-solid fa-umbrella-beach"></i> Férias
+            </button>
+            <button class="btn btn-danger" onclick="showRescisionPanel(${employee.id})">
+              <i class="fa-solid fa-file-contract"></i> Rescisão
+            </button>
+            <button class="btn btn-danger" onclick="deleteEmployee(${employee.id})">
+              <i class="fa-solid fa-trash"></i> Excluir
+            </button>
+          </div>
+        `;
+        
+        container.appendChild(employeeCard);
+      });
+    }
+
+    function editEmployee(employeeId) {
+      const employee = employees.find(e => e.id === employeeId);
+      if (employee) {
+        currentEmployeeId = employeeId;
+        
+        byId('employee-name').value = employee.name;
+        byId('employee-cpf').value = employee.cpf;
+        byId('employee-rg').value = employee.rg;
+        byId('employee-birthdate').value = employee.birthdate;
+        byId('employee-gender').value = employee.gender;
+        byId('employee-marital-status').value = employee.maritalStatus;
+        byId('employee-phone').value = employee.phone;
+        byId('employee-email').value = employee.email;
+        byId('employee-address').value = employee.address || '';
+        
+        byId('employee-position').value = employee.position;
+        byId('employee-department').value = employee.department;
+        byId('employee-hire-date').value = employee.hireDate;
+        byId('employee-exit-date').value = employee.exitDate || '';
+        byId('employee-base-salary').value = employee.baseSalary;
+        byId('employee-contract-type').value = employee.contractType;
+        byId('employee-work-hours').value = employee.workHours;
+        byId('employee-status').value = employee.status;
+        
+        byId('employee-transport-allowance').value = employee.transportAllowance || 0;
+        byId('employee-meal-allowance').value = employee.mealAllowance || 0;
+        byId('employee-food-allowance').value = employee.foodAllowance || 0;
+        byId('employee-health-insurance').value = employee.healthInsurance || 0;
+        byId('employee-other-benefits').value = employee.otherBenefits || 0;
+        byId('employee-notes').value = employee.notes || '';
+        
+        byId('employee-vacation-days').value = employee.vacationDays || 30;
+        byId('employee-thirteenth-salary').value = employee.thirteenthSalary || 'sim';
+        byId('employee-payroll-notes').value = employee.payrollNotes || '';
+        
+        byId('employee-form-title').textContent = 'Editar Funcionário';
+        byId('employee-form-container').style.display = 'block';
+        showEmployeeTab('dados-pessoais', document.querySelector('.tab'));
+      }
+    }
+
+    function deleteEmployee(employeeId) {
+      if (confirm('Tem certeza que deseja excluir este funcionário?')) {
+        employees = employees.filter(e => e.id !== employeeId);
+        loadEmployees();
+        showAlert('Funcionário excluído com sucesso!');
+      }
+    }
+
+    function searchEmployees() {
+      const query = byId('search-employee').value.toLowerCase().trim();
+      
+      if (!query) {
+        loadEmployees();
+        return;
+      }
+      
+      const filtered = employees.filter(employee => 
+        employee.name.toLowerCase().includes(query) ||
+        employee.position.toLowerCase().includes(query) ||
+        employee.department.toLowerCase().includes(query)
+      );
+      
+      const container = byId('employees-container');
+      container.innerHTML = '';
+      
+      filtered.forEach(employee => {
+        // Mesmo código de loadEmployees para criar os cards
+        const hireDate = new Date(employee.hireDate);
+        const today = new Date();
+        const monthsWorked = (today.getFullYear() - hireDate.getFullYear()) * 12 + 
+                            (today.getMonth() - hireDate.getMonth());
+        const vacationDaysEarned = Math.floor(monthsWorked / 12) * 30;
+        
+        const vacationDaysUsed = employee.vacations ? 
+          employee.vacations.reduce((total, vacation) => total + vacation.days, 0) : 0;
+        
+        const vacationDaysAvailable = vacationDaysEarned - vacationDaysUsed;
+        
         const pendingAdvances = employee.advances ? 
           employee.advances.filter(a => a.status === 'Pendente')
                          .reduce((total, advance) => total + advance.amount, 0) : 0;
@@ -2734,76 +3071,6 @@
       });
     }
 
-    function editEmployee(employeeId) {
-      const employee = employees.find(e => e.id === employeeId);
-      if (employee) {
-        currentEmployeeId = employeeId;
-        
-        // Dados Pessoais
-        byId('employee-name').value = employee.name;
-        byId('employee-cpf').value = employee.cpf;
-        byId('employee-rg').value = employee.rg;
-        byId('employee-birthdate').value = employee.birthdate;
-        byId('employee-gender').value = employee.gender;
-        byId('employee-marital-status').value = employee.maritalStatus;
-        byId('employee-phone').value = employee.phone;
-        byId('employee-email').value = employee.email;
-        byId('employee-address').value = employee.address || '';
-        
-        // Dados Profissionais
-        byId('employee-position').value = employee.position;
-        byId('employee-department').value = employee.department;
-        byId('employee-hire-date').value = employee.hireDate;
-        byId('employee-base-salary').value = employee.baseSalary;
-        byId('employee-contract-type').value = employee.contractType;
-        byId('employee-work-hours').value = employee.workHours;
-        byId('employee-status').value = employee.status;
-        
-        // Benefícios
-        byId('employee-transport-allowance').value = employee.transportAllowance || 0;
-        byId('employee-meal-allowance').value = employee.mealAllowance || 0;
-        byId('employee-food-allowance').value = employee.foodAllowance || 0;
-        byId('employee-health-insurance').value = employee.healthInsurance || 0;
-        byId('employee-other-benefits').value = employee.otherBenefits || 0;
-        byId('employee-notes').value = employee.notes || '';
-        
-        byId('employee-form-title').textContent = 'Editar Funcionário';
-        byId('employee-form-container').style.display = 'block';
-        showEmployeeTab('dados-pessoais', document.querySelector('.tab'));
-      }
-    }
-
-    function deleteEmployee(employeeId) {
-      if (confirm('Tem certeza que deseja excluir este funcionário?')) {
-        employees = employees.filter(e => e.id !== employeeId);
-        loadEmployees();
-        showAlert('Funcionário excluído com sucesso!');
-      }
-    }
-
-    function searchEmployees() {
-      const query = byId('search-employee').value.toLowerCase().trim();
-      
-      if (!query) {
-        loadEmployees();
-        return;
-      }
-      
-      const filtered = employees.filter(employee => 
-        employee.name.toLowerCase().includes(query) ||
-        employee.position.toLowerCase().includes(query) ||
-        employee.department.toLowerCase().includes(query)
-      );
-      
-      const container = byId('employees-container');
-      container.innerHTML = '';
-      
-      filtered.forEach(employee => {
-        // (O mesmo código de loadEmployees para criar os cards)
-        // ... (código para criar card do funcionário) ...
-      });
-    }
-
     function filterEmployees() {
       const department = byId('filter-department').value;
       const status = byId('filter-status').value;
@@ -2822,14 +3089,684 @@
       container.innerHTML = '';
       
       filtered.forEach(employee => {
-        // (O mesmo código de loadEmployees para criar os cards)
-        // ... (código para criar card do funcionário) ...
+        // Mesmo código de loadEmployees para criar os cards
+        const hireDate = new Date(employee.hireDate);
+        const today = new Date();
+        const monthsWorked = (today.getFullYear() - hireDate.getFullYear()) * 12 + 
+                            (today.getMonth() - hireDate.getMonth());
+        const vacationDaysEarned = Math.floor(monthsWorked / 12) * 30;
+        
+        const vacationDaysUsed = employee.vacations ? 
+          employee.vacations.reduce((total, vacation) => total + vacation.days, 0) : 0;
+        
+        const vacationDaysAvailable = vacationDaysEarned - vacationDaysUsed;
+        
+        const pendingAdvances = employee.advances ? 
+          employee.advances.filter(a => a.status === 'Pendente')
+                         .reduce((total, advance) => total + advance.amount, 0) : 0;
+        
+        const employeeCard = document.createElement('div');
+        employeeCard.className = 'employee-card';
+        employeeCard.innerHTML = `
+          <div class="employee-header">
+            <div class="employee-info">
+              <div class="employee-avatar">${employee.name.charAt(0)}</div>
+              <div class="employee-details">
+                <h4>${employee.name}</h4>
+                <p>${employee.position} - ${employee.department}</p>
+                <p>Admitido em: ${formatDate(employee.hireDate)}</p>
+              </div>
+            </div>
+            <div>
+              <span class="status-badge ${employee.status === 'Ativo' ? 'status-pago' : 
+                                         employee.status === 'Férias' ? 'status-agendado' : 
+                                         employee.status === 'Afastado' ? 'status-pendente' : 
+                                         'status-atrasado'}">${employee.status}</span>
+            </div>
+          </div>
+          
+          <div class="employee-stats">
+            <div class="stat-item">
+              <div class="stat-value">${currency(employee.totalSalary)}</div>
+              <div class="stat-label">Salário Total</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">${vacationDaysAvailable}</div>
+              <div class="stat-label">Dias de Férias</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">${currency(pendingAdvances)}</div>
+              <div class="stat-label">Adiantamentos Pendentes</div>
+            </div>
+          </div>
+          
+          <div class="salary-breakdown">
+            <div class="breakdown-item">
+              <span class="breakdown-label">Salário Base:</span>
+              <span class="breakdown-value">${currency(employee.baseSalary)}</span>
+            </div>
+            <div class="breakdown-item">
+              <span class="breakdown-label">Benefícios:</span>
+              <span class="breakdown-value">${currency(employee.totalSalary - employee.baseSalary)}</span>
+            </div>
+          </div>
+          
+          <div class="quick-actions" style="margin-top:15px;">
+            <button class="btn btn-primary" onclick="editEmployee(${employee.id})">
+              <i class="fa-solid fa-edit"></i> Editar
+            </button>
+            <button class="btn btn-warning" onclick="showAdvancePanel(${employee.id})">
+              <i class="fa-solid fa-hand-holding-usd"></i> Adiantamentos
+            </button>
+            <button class="btn btn-info" onclick="showVacationPanel(${employee.id})">
+              <i class="fa-solid fa-umbrella-beach"></i> Férias
+            </button>
+            <button class="btn btn-danger" onclick="deleteEmployee(${employee.id})">
+              <i class="fa-solid fa-trash"></i> Excluir
+            </button>
+          </div>
+        `;
+        
+        container.appendChild(employeeCard);
       });
+    }
+
+    // ========== SISTEMA DE ADIANTAMENTOS ==========
+    function showAdvancePanel(employeeId) {
+      const employee = employees.find(e => e.id === employeeId);
+      if (!employee) return;
+
+      const advancePanel = document.createElement('div');
+      advancePanel.className = 'panel';
+      advancePanel.innerHTML = `
+        <div class="panel-header">
+          <h3>Adiantamentos - ${employee.name}</h3>
+          <button class="btn btn-muted" onclick="this.parentElement.parentElement.remove()">
+            <i class="fa-solid fa-times"></i> Fechar
+          </button>
+        </div>
+        
+        <div class="filters">
+          <div class="row">
+            <div class="form-group">
+              <label class="form-label">Valor do Adiantamento (R$)</label>
+              <input type="number" id="advance-amount" step="0.01" placeholder="Valor">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Data</label>
+              <input type="date" id="advance-date" value="${todayISO()}">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Descrição</label>
+              <input type="text" id="advance-description" placeholder="Descrição do adiantamento">
+            </div>
+          </div>
+          <div class="row">
+            <div class="form-group">
+              <button class="btn btn-primary" onclick="addAdvance(${employeeId})">
+                <i class="fa-solid fa-plus"></i> Adicionar Adiantamento
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Descrição</th>
+                <th>Valor</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="advances-table-${employeeId}">
+              ${renderAdvancesTable(employee)}
+            </tbody>
+          </table>
+        </div>
+        
+        <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+          <h4>Resumo de Adiantamentos</h4>
+          <div class="row">
+            <div class="form-group">
+              <label class="form-label">Total Pendente:</label>
+              <div style="font-weight: 700; color: #dc3545;" id="total-pending-${employeeId}">
+                ${currency(calculatePendingAdvances(employee))}
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Total Pago:</label>
+              <div style="font-weight: 700; color: #28a745;" id="total-paid-${employeeId}">
+                ${currency(calculatePaidAdvances(employee))}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.querySelector('.content .container').appendChild(advancePanel);
+    }
+
+    function renderAdvancesTable(employee) {
+      if (!employee.advances || employee.advances.length === 0) {
+        return '<tr><td colspan="5" style="text-align: center;">Nenhum adiantamento registrado</td></tr>';
+      }
+      
+      return employee.advances.map(advance => `
+        <tr>
+          <td>${formatDate(advance.date)}</td>
+          <td>${advance.description}</td>
+          <td>${currency(advance.amount)}</td>
+          <td>
+            <span class="status-badge ${advance.status === 'Pago' ? 'status-pago' : 'status-pendente'}">
+              ${advance.status}
+            </span>
+          </td>
+          <td>
+            ${advance.status === 'Pendente' ? `
+              <button class="btn btn-success" onclick="markAdvanceAsPaid(${employee.id}, ${advance.id})">
+                <i class="fa-solid fa-check"></i> Marcar como Pago
+              </button>
+            ` : ''}
+            <button class="btn btn-danger" onclick="deleteAdvance(${employee.id}, ${advance.id})">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function addAdvance(employeeId) {
+      const amount = parseFloat(byId('advance-amount').value);
+      const date = byId('advance-date').value;
+      const description = byId('advance-description').value.trim();
+      
+      if (!amount || amount <= 0) {
+        return alert('Informe um valor válido para o adiantamento');
+      }
+      
+      if (!description) {
+        return alert('Informe uma descrição para o adiantamento');
+      }
+      
+      const employee = employees.find(e => e.id === employeeId);
+      if (!employee) return;
+      
+      if (!employee.advances) {
+        employee.advances = [];
+      }
+      
+      const newAdvance = {
+        id: generateId(),
+        amount,
+        date,
+        description,
+        status: 'Pendente',
+        createdAt: new Date().toISOString()
+      };
+      
+      employee.advances.push(newAdvance);
+      
+      byId(`advances-table-${employeeId}`).innerHTML = renderAdvancesTable(employee);
+      byId(`total-pending-${employeeId}`).textContent = currency(calculatePendingAdvances(employee));
+      byId(`total-paid-${employeeId}`).textContent = currency(calculatePaidAdvances(employee));
+      
+      byId('advance-amount').value = '';
+      byId('advance-description').value = '';
+      
+      showAlert('Adiantamento adicionado com sucesso!');
+    }
+
+    function markAdvanceAsPaid(employeeId, advanceId) {
+      const employee = employees.find(e => e.id === employeeId);
+      if (!employee || !employee.advances) return;
+      
+      const advance = employee.advances.find(a => a.id === advanceId);
+      if (advance) {
+        advance.status = 'Pago';
+        advance.paidDate = new Date().toISOString();
+        
+        byId(`advances-table-${employeeId}`).innerHTML = renderAdvancesTable(employee);
+        byId(`total-pending-${employeeId}`).textContent = currency(calculatePendingAdvances(employee));
+        byId(`total-paid-${employeeId}`).textContent = currency(calculatePaidAdvances(employee));
+        
+        showAlert('Adiantamento marcado como pago!');
+      }
+    }
+
+    function deleteAdvance(employeeId, advanceId) {
+      if (!confirm('Tem certeza que deseja excluir este adiantamento?')) return;
+      
+      const employee = employees.find(e => e.id === employeeId);
+      if (!employee || !employee.advances) return;
+      
+      employee.advances = employee.advances.filter(a => a.id !== advanceId);
+      
+      byId(`advances-table-${employeeId}`).innerHTML = renderAdvancesTable(employee);
+      byId(`total-pending-${employeeId}`).textContent = currency(calculatePendingAdvances(employee));
+      byId(`total-paid-${employeeId}`).textContent = currency(calculatePaidAdvances(employee));
+      
+      showAlert('Adiantamento excluído com sucesso!');
+    }
+
+    function calculatePendingAdvances(employee) {
+      if (!employee.advances) return 0;
+      return employee.advances
+        .filter(a => a.status === 'Pendente')
+        .reduce((total, advance) => total + advance.amount, 0);
+    }
+
+    function calculatePaidAdvances(employee) {
+      if (!employee.advances) return 0;
+      return employee.advances
+        .filter(a => a.status === 'Pago')
+        .reduce((total, advance) => total + advance.amount, 0);
+    }
+
+    // ========== SISTEMA DE FÉRIAS ==========
+    function showVacationPanel(employeeId) {
+      const employee = employees.find(e => e.id === employeeId);
+      if (!employee) return;
+
+      const vacationDaysAvailable = calculateVacationDays(employee);
+      
+      const vacationPanel = document.createElement('div');
+      vacationPanel.className = 'panel';
+      vacationPanel.innerHTML = `
+        <div class="panel-header">
+          <h3>Controle de Férias - ${employee.name}</h3>
+          <button class="btn btn-muted" onclick="this.parentElement.parentElement.remove()">
+            <i class="fa-solid fa-times"></i> Fechar
+          </button>
+        </div>
+        
+        <div style="margin-bottom: 20px; padding: 15px; background: linear-gradient(135deg, #e3f2fd, #bbdefb); border-radius: 8px;">
+          <h4>Resumo de Férias</h4>
+          <div class="row">
+            <div class="form-group">
+              <label class="form-label">Dias Disponíveis:</label>
+              <div style="font-size: 24px; font-weight: 700; color: #1976d2;">${vacationDaysAvailable} dias</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Próximo Período Aquisitivo:</label>
+              <div style="font-weight: 600;">${calculateNextVacationPeriod(employee)}</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="filters">
+          <h4>Registrar Novo Período de Férias</h4>
+          <div class="row">
+            <div class="form-group">
+              <label class="form-label">Data de Início</label>
+              <input type="date" id="vacation-start-date">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Data de Término</label>
+              <input type="date" id="vacation-end-date">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Dias de Férias</label>
+              <input type="number" id="vacation-days" placeholder="Quantidade de dias">
+            </div>
+          </div>
+          <div class="row">
+            <div class="form-group">
+              <label class="form-label">Observações</label>
+              <input type="text" id="vacation-notes" placeholder="Observações sobre as férias">
+            </div>
+            <div class="form-group">
+              <label class="form-label">&nbsp;</label>
+              <button class="btn btn-primary" onclick="addVacation(${employeeId})">
+                <i class="fa-solid fa-plus"></i> Registrar Férias
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Período</th>
+                <th>Dias</th>
+                <th>Status</th>
+                <th>Observações</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="vacations-table-${employeeId}">
+              ${renderVacationsTable(employee)}
+            </tbody>
+          </table>
+        </div>
+      `;
+      
+      document.querySelector('.content .container').appendChild(vacationPanel);
+    }
+
+    function calculateVacationDays(employee) {
+      if (!employee.hireDate) return 0;
+      
+      const hireDate = new Date(employee.hireDate);
+      const today = new Date();
+      
+      const monthsWorked = (today.getFullYear() - hireDate.getFullYear()) * 12 + 
+                          (today.getMonth() - hireDate.getMonth());
+      
+      const vacationDaysEarned = Math.floor(monthsWorked / 12) * 30;
+      
+      const vacationDaysUsed = employee.vacations ? 
+        employee.vacations.reduce((total, vacation) => total + vacation.days, 0) : 0;
+      
+      return Math.max(0, vacationDaysEarned - vacationDaysUsed);
+    }
+
+    function calculateNextVacationPeriod(employee) {
+      if (!employee.hireDate) return 'N/A';
+      
+      const hireDate = new Date(employee.hireDate);
+      const nextPeriod = new Date(hireDate);
+      nextPeriod.setFullYear(nextPeriod.getFullYear() + 1);
+      
+      return formatDate(nextPeriod.toISOString().split('T')[0]);
+    }
+
+    function renderVacationsTable(employee) {
+      if (!employee.vacations || employee.vacations.length === 0) {
+        return '<tr><td colspan="5" style="text-align: center;">Nenhum período de férias registrado</td></tr>';
+      }
+      
+      return employee.vacations.map(vacation => `
+        <tr>
+          <td>${formatDate(vacation.startDate)} à ${formatDate(vacation.endDate)}</td>
+          <td>${vacation.days} dias</td>
+          <td>
+            <span class="status-badge ${vacation.status === 'Gozadas' ? 'status-pago' : 
+                                      vacation.status === 'Agendadas' ? 'status-agendado' : 
+                                      'status-pendente'}">
+              ${vacation.status}
+            </span>
+          </td>
+          <td>${vacation.notes || '-'}</td>
+          <td>
+            <button class="btn btn-danger" onclick="deleteVacation(${employee.id}, ${vacation.id})">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function addVacation(employeeId) {
+      const startDate = byId('vacation-start-date').value;
+      const endDate = byId('vacation-end-date').value;
+      const days = parseInt(byId('vacation-days').value);
+      const notes = byId('vacation-notes').value.trim();
+      
+      if (!startDate || !endDate || !days || days <= 0) {
+        return alert('Preencha todas as informações das férias');
+      }
+      
+      const employee = employees.find(e => e.id === employeeId);
+      if (!employee) return;
+      
+      if (!employee.vacations) {
+        employee.vacations = [];
+      }
+      
+      const availableDays = calculateVacationDays(employee);
+      if (days > availableDays) {
+        return alert(`Dias insuficientes! Disponível: ${availableDays} dias`);
+      }
+      
+      const newVacation = {
+        id: generateId(),
+        startDate,
+        endDate,
+        days,
+        notes,
+        status: 'Agendadas',
+        createdAt: new Date().toISOString()
+      };
+      
+      employee.vacations.push(newVacation);
+      
+      byId(`vacations-table-${employeeId}`).innerHTML = renderVacationsTable(employee);
+      
+      const vacationPanel = document.querySelector('.panel:last-child');
+      if (vacationPanel) {
+        const availableDaysElement = vacationPanel.querySelector('div[style*="font-size: 24px"]');
+        if (availableDaysElement) {
+          availableDaysElement.textContent = `${calculateVacationDays(employee)} dias`;
+        }
+      }
+      
+      byId('vacation-start-date').value = '';
+      byId('vacation-end-date').value = '';
+      byId('vacation-days').value = '';
+      byId('vacation-notes').value = '';
+      
+      showAlert('Férias registradas com sucesso!');
+    }
+
+    function deleteVacation(employeeId, vacationId) {
+      if (!confirm('Tem certeza que deseja excluir este período de férias?')) return;
+      
+      const employee = employees.find(e => e.id === employeeId);
+      if (!employee || !employee.vacations) return;
+      
+      employee.vacations = employee.vacations.filter(v => v.id !== vacationId);
+      
+      byId(`vacations-table-${employeeId}`).innerHTML = renderVacationsTable(employee);
+      
+      showAlert('Período de férias excluído com sucesso!');
+    }
+
+    // ========== SISTEMA DE RESCISÃO ==========
+    function showRescisionPanel(employeeId) {
+      const employee = employees.find(e => e.id === employeeId);
+      if (!employee) return;
+
+      const rescissionPanel = document.createElement('div');
+      rescissionPanel.className = 'panel';
+      rescissionPanel.innerHTML = `
+        <div class="panel-header">
+          <h3>Rescisão - ${employee.name}</h3>
+          <button class="btn btn-muted" onclick="this.parentElement.parentElement.remove()">
+            <i class="fa-solid fa-times"></i> Fechar
+          </button>
+        </div>
+        
+        <div class="filters">
+          <div class="row">
+            <div class="form-group">
+              <label class="form-label">Data da Rescisão</label>
+              <input type="date" id="rescission-date" value="${todayISO()}">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tipo de Rescisão</label>
+              <select id="rescission-type">
+                <option value="Demissão sem justa causa">Demissão sem justa causa</option>
+                <option value="Demissão por justa causa">Demissão por justa causa</option>
+                <option value="Pedido de demissão">Pedido de demissão</option>
+                <option value="Término de contrato">Término de contrato</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="form-group">
+              <label class="form-label">Saldo de Salário (R$)</label>
+              <input type="number" id="rescission-salary" step="0.01" value="${employee.baseSalary}">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Férias Proporcionais (R$)</label>
+              <input type="number" id="rescission-vacation" step="0.01" value="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">13º Proporcional (R$)</label>
+              <input type="number" id="rescission-thirteenth" step="0.01" value="0">
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="form-group">
+              <label class="form-label">Multa FGTS (R$)</label>
+              <input type="number" id="rescission-fgts" step="0.01" value="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Aviso Prévio (R$)</label>
+              <input type="number" id="rescission-notice" step="0.01" value="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Outros Valores (R$)</label>
+              <input type="number" id="rescission-other" step="0.01" value="0">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Observações</label>
+            <textarea id="rescission-notes" rows="3" placeholder="Observações sobre a rescisão"></textarea>
+          </div>
+          
+          <div class="row">
+            <div class="form-group">
+              <button class="btn btn-danger" onclick="calculateRescission(${employeeId})">
+                <i class="fa-solid fa-calculator"></i> Calcular Rescisão
+              </button>
+              <button class="btn btn-success" onclick="saveRescission(${employeeId})" style="margin-left:10px;">
+                <i class="fa-solid fa-save"></i> Salvar Rescisão
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div id="rescission-result" style="display:none; margin-top:20px; padding:15px; background:#f8f9fa; border-radius:8px;">
+          <h4>Resultado do Cálculo</h4>
+          <div class="row">
+            <div class="form-group">
+              <label class="form-label">Total da Rescisão:</label>
+              <div id="total-rescission" style="font-size:24px; font-weight:700; color:#dc3545;">R$ 0,00</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="table-container" style="margin-top:20px;">
+          <h4>Histórico de Rescisões</h4>
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Tipo</th>
+                <th>Valor Total</th>
+                <th>Observações</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="rescissions-table-${employeeId}">
+              ${renderRescissionsTable(employee)}
+            </tbody>
+          </table>
+        </div>
+      `;
+      
+      document.querySelector('.content .container').appendChild(rescissionPanel);
+    }
+
+    function renderRescissionsTable(employee) {
+      if (!employee.rescissions || employee.rescissions.length === 0) {
+        return '<tr><td colspan="5" style="text-align: center;">Nenhuma rescisão registrada</td></tr>';
+      }
+      
+      return employee.rescissions.map(rescission => `
+        <tr>
+          <td>${formatDate(rescission.date)}</td>
+          <td>${rescission.type}</td>
+          <td>${currency(rescission.total)}</td>
+          <td>${rescission.notes || '-'}</td>
+          <td>
+            <button class="btn btn-danger" onclick="deleteRescission(${employee.id}, ${rescission.id})">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function calculateRescission(employeeId) {
+      const salary = parseFloat(byId('rescission-salary').value) || 0;
+      const vacation = parseFloat(byId('rescission-vacation').value) || 0;
+      const thirteenth = parseFloat(byId('rescission-thirteenth').value) || 0;
+      const fgts = parseFloat(byId('rescission-fgts').value) || 0;
+      const notice = parseFloat(byId('rescission-notice').value) || 0;
+      const other = parseFloat(byId('rescission-other').value) || 0;
+      
+      const total = salary + vacation + thirteenth + fgts + notice + other;
+      
+      byId('total-rescission').textContent = currency(total);
+      byId('rescission-result').style.display = 'block';
+    }
+
+    function saveRescission(employeeId) {
+      const date = byId('rescission-date').value;
+      const type = byId('rescission-type').value;
+      const salary = parseFloat(byId('rescission-salary').value) || 0;
+      const vacation = parseFloat(byId('rescission-vacation').value) || 0;
+      const thirteenth = parseFloat(byId('rescission-thirteenth').value) || 0;
+      const fgts = parseFloat(byId('rescission-fgts').value) || 0;
+      const notice = parseFloat(byId('rescission-notice').value) || 0;
+      const other = parseFloat(byId('rescission-other').value) || 0;
+      const notes = byId('rescission-notes').value;
+      
+      const total = salary + vacation + thirteenth + fgts + notice + other;
+      
+      const employee = employees.find(e => e.id === employeeId);
+      if (!employee) return;
+      
+      if (!employee.rescissions) {
+        employee.rescissions = [];
+      }
+      
+      const newRescission = {
+        id: generateId(),
+        date,
+        type,
+        salary,
+        vacation,
+        thirteenth,
+        fgts,
+        notice,
+        other,
+        total,
+        notes,
+        createdAt: new Date().toISOString()
+      };
+      
+      employee.rescissions.push(newRescission);
+      
+      byId(`rescissions-table-${employeeId}`).innerHTML = renderRescissionsTable(employee);
+      
+      showAlert('Rescisão salva com sucesso!');
+    }
+
+    function deleteRescission(employeeId, rescissionId) {
+      if (!confirm('Tem certeza que deseja excluir esta rescisão?')) return;
+      
+      const employee = employees.find(e => e.id === employeeId);
+      if (!employee || !employee.rescissions) return;
+      
+      employee.rescissions = employee.rescissions.filter(r => r.id !== rescissionId);
+      
+      byId(`rescissions-table-${employeeId}`).innerHTML = renderRescissionsTable(employee);
+      
+      showAlert('Rescisão excluída com sucesso!');
     }
 
     // ========== RELATÓRIOS ==========
     function loadReportFilters(){
-      // Carregar clientes
       const clientSelect = byId('report-sales-client');
       clientSelect.innerHTML = '<option value="">Todos os clientes</option>';
       clients.forEach(client => {
@@ -2839,7 +3776,6 @@
         clientSelect.appendChild(option);
       });
       
-      // Carregar serviços
       const serviceSelect = byId('report-sales-service');
       serviceSelect.innerHTML = '<option value="">Todos os serviços</option>';
       services.forEach(service => {
@@ -2859,14 +3795,12 @@
       
       let filteredSales = sales;
       
-      // Aplicar filtros
       if(startDate) filteredSales = filteredSales.filter(s => s.date >= startDate);
       if(endDate) filteredSales = filteredSales.filter(s => s.date <= endDate);
       if(clientId) filteredSales = filteredSales.filter(s => s.clientId === parseInt(clientId));
       if(serviceId) filteredSales = filteredSales.filter(s => s.serviceId === parseInt(serviceId));
       if(status) filteredSales = filteredSales.filter(s => s.status === status);
       
-      // Atualizar tabela
       const tbody = byId('sales-report-body');
       tbody.innerHTML = '';
       
@@ -2876,6 +3810,10 @@
         
         if(!client || !service) return;
         
+        const profit = service.price - service.cost;
+        const statusClass = sale.status === 'Pago' ? 'status-pago' : 
+                          sale.status === 'Não Pago' ? 'status-nao-pago' : 'status-pendente';
+        
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${formatDate(sale.date)}</td>
@@ -2883,29 +3821,40 @@
           <td>${sale.vehicle || 'Não informado'}</td>
           <td>${sale.plate || 'Não informada'}</td>
           <td>${service.name}</td>
-          <td>${currency(sale.total)}</td>
-          <td><span class="status-badge ${sale.status === 'Pago' ? 'status-pago' : 'status-pendente'}">${sale.status}</span></td>
+          <td>${currency(service.price)}</td>
+          <td>${currency(service.cost)}</td>
+          <td style="color: ${profit >= 0 ? '#28a745' : '#dc3545'}; font-weight: 600;">${currency(profit)}</td>
+          <td><span class="status-badge ${statusClass}">${sale.status}</span></td>
           <td>${sale.payment}</td>
         `;
         tbody.appendChild(tr);
       });
       
-      // Atualizar resumo
       updateReportSummary(filteredSales);
-      
-      // Atualizar gráfico
       updateSalesReportChart(filteredSales);
     }
 
     function updateReportSummary(salesData){
       const totalSales = salesData.length;
-      const totalValue = salesData.reduce((sum, sale) => sum + sale.total, 0);
+      const totalValue = salesData.reduce((sum, sale) => {
+        const service = services.find(s => s.id === sale.serviceId);
+        return sum + (service ? service.price : 0);
+      }, 0);
+      
+      const totalCost = salesData.reduce((sum, sale) => {
+        const service = services.find(s => s.id === sale.serviceId);
+        return sum + (service ? service.cost : 0);
+      }, 0);
+      
+      const totalProfit = totalValue - totalCost;
       const pendingValue = salesData.filter(s => s.status === 'Pendente').reduce((sum, sale) => sum + sale.total, 0);
       const receivedValue = salesData.filter(s => s.status === 'Pago').reduce((sum, sale) => sum + sale.total, 0);
       const averageTicket = totalSales > 0 ? totalValue / totalSales : 0;
       
       byId('report-total-sales').textContent = totalSales;
       byId('report-total-value').textContent = currency(totalValue);
+      byId('report-total-cost').textContent = currency(totalCost);
+      byId('report-total-profit').textContent = currency(totalProfit);
       byId('report-pending-value').textContent = currency(pendingValue);
       byId('report-received-value').textContent = currency(receivedValue);
       byId('report-average-ticket').textContent = currency(averageTicket);
@@ -2914,7 +3863,6 @@
     function updateSalesReportChart(salesData){
       const ctx = byId('salesReportChart').getContext('2d');
       
-      // Agrupar por mês
       const monthlyData = {};
       
       salesData.forEach(sale => {
@@ -2959,7 +3907,6 @@
     }
 
     function exportToExcel(){
-      // Simulação de exportação para Excel
       alert('Funcionalidade de exportação para Excel será implementada em breve!');
     }
 
@@ -2993,17 +3940,14 @@
         currentUser.password = password;
       }
       
-      // Atualizar na lista de usuários
       const userIndex = users.findIndex(u => u.id === currentUser.id);
       if(userIndex !== -1) {
         users[userIndex] = currentUser;
       }
       
-      // Atualizar na interface
       byId('user-name').textContent = currentUser.name;
       byId('user-avatar').textContent = currentUser.name.charAt(0);
       
-      // Limpar campos de senha
       byId('profile-password').value = '';
       byId('profile-password-confirm').value = '';
       
@@ -3012,7 +3956,6 @@
 
     // ========== INICIALIZAÇÃO ==========
     function init(){
-      // Configurar datas padrão
       byId('sale-date').value = todayISO();
       byId('scheduling-date').value = todayISO();
       byId('scheduling-time').value = '09:00';
@@ -3022,28 +3965,86 @@
       byId('report-sales-date-start').value = firstDay.toISOString().split('T')[0];
       byId('report-sales-date-end').value = todayISO();
       
-      // Carregar dados iniciais
-      updateDashboard();
-      loadClientsTable();
-      loadServicesTable();
-      loadCategoriesTable();
-      loadUsersTable();
-      loadBills();
-      loadReportFilters();
-      loadSchedulingFormOptions();
-      loadSchedulingCalendar();
-      loadSchedulingTable();
-      loadPayablesTable();
-      loadEmployees();
+      setTimeout(() => {
+        updateDashboard();
+        loadClientsTable();
+        loadServicesTable();
+        loadCategoriesTable();
+        loadUsersTable();
+        loadBills();
+        loadReportFilters();
+        loadSchedulingFormOptions();
+        loadSchedulingCalendar();
+        loadSchedulingTable();
+        loadPayablesTable();
+        loadEmployees();
+      }, 100);
       
-      // Configurar usuário atual
       byId('user-name').textContent = currentUser.name;
       byId('user-avatar').textContent = currentUser.name.charAt(0);
       fillProfile();
+      
+      addSampleData();
     }
 
-    // Inicializar quando a página carregar
-    window.onload = init;
+    function addSampleData() {
+      if (clients.length === 0) {
+        clients.push(
+          { id: generateId(), name: "João Silva", email: "joao@email.com", phone: "(11) 99999-9999", document: "123.456.789-00", inspectionType: "1", createdAt: new Date().toISOString() },
+          { id: generateId(), name: "Maria Santos", email: "maria@email.com", phone: "(11) 88888-8888", document: "987.654.321-00", inspectionType: "2", createdAt: new Date().toISOString() }
+        );
+      }
+      
+      if (services.length === 0) {
+        services.push(
+          { id: generateId(), code: "001", name: "Vistoria Veicular Completa", price: 150.00, cost: 27.00, duration: 60, categoryId: null, createdAt: new Date().toISOString() },
+          { id: generateId(), code: "002", name: "Vistoria Cautelar", price: 200.00, cost: 45.00, duration: 90, categoryId: null, createdAt: new Date().toISOString() }
+        );
+      }
+      
+      if (employees.length === 0) {
+        employees.push(
+          { 
+            id: generateId(), 
+            name: "Carlos Oliveira", 
+            cpf: "111.222.333-44", 
+            rg: "12.345.678-9",
+            birthdate: "1985-05-15",
+            gender: "Masculino",
+            maritalStatus: "Casado(a)",
+            phone: "(11) 77777-7777",
+            email: "carlos@empresa.com",
+            address: "Rua das Flores, 123",
+            position: "Vistoriador",
+            department: "Vistorias",
+            hireDate: "2023-01-15",
+            exitDate: null,
+            baseSalary: 2500.00,
+            contractType: "CLT",
+            workHours: 44,
+            status: "Ativo",
+            transportAllowance: 200.00,
+            mealAllowance: 400.00,
+            foodAllowance: 0,
+            healthInsurance: 300.00,
+            otherBenefits: 0,
+            notes: "Funcionário dedicado",
+            vacationDays: 30,
+            thirteenthSalary: "sim",
+            payrollNotes: "",
+            totalSalary: 3400.00,
+            advances: [],
+            vacations: [],
+            rescissions: [],
+            createdAt: new Date().toISOString()
+          }
+        );
+      }
+    }
+
+    window.addEventListener('load', function() {
+      init();
+    });
   </script>
 </body>
 </html>
